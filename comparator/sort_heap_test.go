@@ -50,11 +50,11 @@ func TestReverseSortWithComparator(t *testing.T) {
 
 func assertSort(t *testing.T, input, expected []interface{}, reverse bool, c Comparator) {
 	// sort
+	container := NewContainer(input, c)
 	if reverse {
-		SortReverse(input, c)
-	} else {
-		Sort(input, c)
+		container.Reverse()
 	}
+	container.Sort()
 
 	for i := 0; i < len(input); i++ {
 		assert.Equal(t, expected[i], input[i])

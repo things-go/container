@@ -54,12 +54,12 @@ func New(opts ...Option) *Queue {
 	q := &Queue{
 		&comparator.Container{
 			Items: make([]interface{}, 0),
-			Cmp:   nil,
 		},
 	}
 	for _, opt := range opts {
 		opt(q)
 	}
+	heap.Init(q.data)
 	return q
 }
 

@@ -24,6 +24,11 @@ var (
 	_ sort.Interface = (*Container)(nil)
 )
 
+// NewContainer new container with value slice and Comparator
+func NewContainer(values []interface{}, c Comparator) *Container {
+	return &Container{Items: values, Cmp: c}
+}
+
 // Container for sort or heap sort, it implement sort.Interface and heap.Interface.
 type Container struct {
 	noCopy  noCopy // nolint: structcheck,unused
@@ -83,16 +88,4 @@ func (sf *Container) Compare(v1, v2 interface{}) int {
 // or according to the provided comparator.
 func (sf *Container) Sort() {
 	sort.Sort(sf)
-}
-
-// Sort sorts values into ascending sequence according to their natural ordering,
-// or according to the provided comparator.
-func Sort(values []interface{}, c Comparator) {
-	sort.Sort(&Container{Items: values, Cmp: c})
-}
-
-// SortReverse sorts values into ascending sequence according to their reverse ordering,
-// or according to the provided comparator.
-func SortReverse(values []interface{}, c Comparator) {
-	sort.Sort((&Container{Items: values, Cmp: c}).Reverse())
 }
