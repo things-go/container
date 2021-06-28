@@ -125,7 +125,7 @@ func (sf *Queue) Remove(val interface{}) {
 
 func (sf *Queue) compare(v1, v2 interface{}) bool {
 	if sf.cmp == nil {
-		return v1 == v2
+		return comparator.Compare(v1, v2) == 0
 	}
 	return sf.cmp.Compare(v1, v2) == 0
 }

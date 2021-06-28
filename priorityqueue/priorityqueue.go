@@ -49,6 +49,15 @@ func WithMaxHeap() Option {
 	}
 }
 
+// WithItems with item
+func WithItems(item []interface{}) Option {
+	return func(q *Queue) {
+		if item != nil {
+			q.data.Items = item
+		}
+	}
+}
+
 // New initializes and returns an Queue, default min heap.
 func New(opts ...Option) *Queue {
 	q := &Queue{

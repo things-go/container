@@ -22,12 +22,8 @@ import (
 )
 
 func TestPriorityQueueLen(t *testing.T) {
-	q := New()
-
-	// add 3 elements
-	q.Add(5)
-	q.Add(6)
-	q.Add(7)
+	// init 3 elements
+	q := New(WithItems([]interface{}{5, 6, 7}))
 
 	require.Equal(t, 3, q.Len())
 	require.False(t, q.IsEmpty())

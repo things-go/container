@@ -248,5 +248,5 @@ func (sf *LinkedMap) compare(v1, v2 interface{}) bool {
 	if sf.cmp != nil {
 		return sf.cmp.Compare(v1, v2) == 0
 	}
-	return v1 == v2
+	return comparator.Compare(v1, v2) == 0
 }

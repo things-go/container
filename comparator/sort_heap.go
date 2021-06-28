@@ -31,10 +31,10 @@ func NewContainer(values []interface{}, c Comparator) *Container {
 
 // Container for sort or heap sort, it implement sort.Interface and heap.Interface.
 type Container struct {
-	noCopy  noCopy // nolint: structcheck,unused
-	Items   []interface{}
-	Cmp     Comparator
-	reverse bool
+	noCopy  noCopy        // nolint: structcheck,unused
+	Items   []interface{} // item slice
+	Cmp     Comparator    // if nil, use default Compare
+	reverse bool          // reverse sort or heap
 }
 
 // Len implement heap.Interface.
