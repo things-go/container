@@ -17,6 +17,7 @@ package arraylist
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/things-go/container"
 	"github.com/things-go/container/comparator"
@@ -27,17 +28,17 @@ var _ container.List = (*List)(nil)
 // List represents an array list.
 // It implements the interface list.Interface.
 type List struct {
-	items []interface{}
-	cmp   comparator.Comparator
+	items   []interface{}
+	compare container.Comparator
 }
 
 // Option option for New.
 type Option func(l *List)
 
 // WithComparator with user's Comparator.
-func WithComparator(cmp comparator.Comparator) Option {
+func WithComparator(cmp container.Comparator) Option {
 	return func(l *List) {
-		l.cmp = cmp
+		l.compare = cmp
 	}
 }
 
@@ -228,7 +229,7 @@ func (sf *List) Sort(reverse ...bool) {
 	if sf.Len() <= 1 {
 		return
 	}
-	ct := comparator.NewContainer(sf.items, sf.cmp)
+	ct := comparator.NewContainer(sf.items, sf.compare)
 	if len(reverse) > 0 && reverse[0] {
 		ct.Reverse()
 	}
@@ -256,18 +257,18 @@ func (sf *List) shrinkList() {
 // in this list, or -1 if this list does not contain the element.
 func (sf *List) indexOf(val interface{}) int {
 	for i, v := range sf.items {
-		if sf.compare(v, val) {
+		if sf.Compare(v, val) {
 			return i
 		}
 	}
 	return -1
 }
 
-func (sf *List) compare(v1, v2 interface{}) bool {
-	if sf.cmp != nil {
-		return sf.cmp.Compare(v1, v2) == 0
+func (sf *List) Compare(v1, v2 interface{}) bool {
+	if sf.compare != nil {
+		return sf.compare(v1, v2) == 0
 	}
-	return comparator.Compare(v1, v2) == 0
+	return reflect.DeepEqual(v1, v2)
 }
 
 func moveLastToFirst(items []interface{}) {

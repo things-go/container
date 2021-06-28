@@ -133,7 +133,7 @@ func TestQueueInit(t *testing.T) {
 }
 
 func TestWithComparator(t *testing.T) {
-	q := New(WithComparator(&student{}))
+	q := New(WithComparator(CompareStudent))
 
 	q.Add(&student{name: "benjamin", age: 34})
 	q.Add(&student{name: "alice", age: 21})
@@ -182,7 +182,7 @@ type student struct {
 }
 
 // Compare returns -1, 0 or 1 when the first student's age is greater, equal to, or less than the second student's age.
-func (s *student) Compare(v1, v2 interface{}) int {
+func CompareStudent(v1, v2 interface{}) int {
 	s1, s2 := v1.(*student), v2.(*student)
 	if s1.age < s2.age {
 		return 1

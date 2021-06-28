@@ -106,7 +106,7 @@ func TestLinkedListValue(t *testing.T) {
 }
 
 func TestUserCompare(t *testing.T) {
-	ll := New(WithComparator(&linkedListNode{}))
+	ll := New(WithComparator(CompareLinkedListNode))
 	ll.PushBack(&linkedListNode{age: 32})
 	ll.PushBack(&linkedListNode{age: 20})
 	ll.PushBack(&linkedListNode{age: 27})
@@ -226,7 +226,7 @@ func TestExtending(t *testing.T) {
 
 func TestLinkdedListComparatorSort(t *testing.T) {
 	expect := []*linkedListNode{{age: 20}, {age: 25}, {age: 27}, {age: 32}}
-	ll := New(WithComparator(&linkedListNode{}))
+	ll := New(WithComparator(CompareLinkedListNode))
 	ll.PushBack(&linkedListNode{age: 32})
 	ll.PushBack(&linkedListNode{age: 20})
 	ll.PushBack(&linkedListNode{age: 27})
@@ -261,7 +261,7 @@ type linkedListNode struct {
 	age int
 }
 
-func (aln *linkedListNode) Compare(v1, v2 interface{}) int {
+func CompareLinkedListNode(v1, v2 interface{}) int {
 	n1, n2 := v1.(*linkedListNode), v2.(*linkedListNode)
 
 	if n1.age < n2.age {

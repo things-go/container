@@ -18,6 +18,7 @@ package linkedlist
 import (
 	"container/list"
 	"fmt"
+	"reflect"
 
 	"github.com/things-go/container"
 	"github.com/things-go/container/comparator"
@@ -28,17 +29,17 @@ var _ container.List = (*LinkedList)(nil)
 // LinkedList represents a doubly linked list.
 // It implements the interface list.Interface.
 type LinkedList struct {
-	l   *list.List
-	cmp comparator.Comparator
+	l       *list.List
+	compare container.Comparator
 }
 
 // Option option for New.
 type Option func(l *LinkedList)
 
 // WithComparator with user's Comparator.
-func WithComparator(cmp comparator.Comparator) Option {
+func WithComparator(cmp container.Comparator) Option {
 	return func(l *LinkedList) {
-		l.cmp = cmp
+		l.compare = cmp
 	}
 }
 
@@ -134,7 +135,7 @@ func (sf *LinkedList) RemoveValue(val interface{}) bool {
 	}
 
 	for e := sf.l.Front(); e != nil; e = e.Next() {
-		if sf.compare(val, e.Value) {
+		if sf.Compare(val, e.Value) {
 			sf.l.Remove(e)
 			return true
 		}
@@ -202,7 +203,7 @@ func (sf *LinkedList) Sort(reverse ...bool) {
 
 	// get all the Values and sort the data
 	vs := sf.Values()
-	ct := comparator.NewContainer(vs, sf.cmp)
+	ct := comparator.NewContainer(vs, sf.compare)
 	if len(reverse) > 0 && reverse[0] {
 		ct.Reverse()
 	}
@@ -249,7 +250,7 @@ func (sf *LinkedList) getElement(index int) *list.Element {
 // in this list, or -1 if this list does not contain the element.
 func (sf *LinkedList) indexOf(val interface{}) int {
 	for index, e := 0, sf.l.Front(); e != nil; e = e.Next() {
-		if sf.compare(val, e.Value) {
+		if sf.Compare(val, e.Value) {
 			return index
 		}
 		index++
@@ -257,9 +258,9 @@ func (sf *LinkedList) indexOf(val interface{}) int {
 	return -1
 }
 
-func (sf *LinkedList) compare(v1, v2 interface{}) bool {
-	if sf.cmp != nil {
-		return sf.cmp.Compare(v1, v2) == 0
+func (sf *LinkedList) Compare(v1, v2 interface{}) bool {
+	if sf.compare != nil {
+		return sf.compare(v1, v2) == 0
 	}
-	return comparator.Compare(v1, v2) == 0
+	return reflect.DeepEqual(v1, v2)
 }

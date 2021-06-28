@@ -143,7 +143,7 @@ func TestQuickQueueInit(t *testing.T) {
 }
 
 func TestQuickQueueWithComparator(t *testing.T) {
-	q := NewQuickQueue(WithComparator(&student{}))
+	q := NewQuickQueue(WithComparator(CompareStudent))
 
 	q.Add(&student{name: "benjamin", age: 34})
 	q.Add(&student{name: "alice", age: 21})

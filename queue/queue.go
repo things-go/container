@@ -15,8 +15,9 @@
 package queue
 
 import (
+	"reflect"
+
 	"github.com/things-go/container"
-	"github.com/things-go/container/comparator"
 )
 
 var _ container.Queue = (*Queue)(nil)
@@ -29,10 +30,10 @@ type element struct {
 
 // Queue represents a singly linked list.
 type Queue struct {
-	head   *element
-	tail   *element
-	length int
-	cmp    comparator.Comparator
+	head    *element
+	tail    *element
+	length  int
+	compare container.Comparator
 }
 
 // New creates a Queue. which implement queue.Interface.
@@ -44,7 +45,7 @@ func New(opts ...Option) *Queue {
 	return q
 }
 
-func (sf *Queue) apply(c comparator.Comparator) { sf.cmp = c }
+func (sf *Queue) apply(c container.Comparator) { sf.compare = c }
 
 // Len returns the length of this queue.
 func (sf *Queue) Len() int { return sf.length }
@@ -93,7 +94,7 @@ func (sf *Queue) Poll() interface{} {
 // Contains returns true if this queue contains the specified element.
 func (sf *Queue) Contains(val interface{}) bool {
 	for e := sf.head; e != nil; e = e.next {
-		if sf.compare(val, e.value) {
+		if sf.Compare(val, e.value) {
 			return true
 		}
 	}
@@ -103,7 +104,7 @@ func (sf *Queue) Contains(val interface{}) bool {
 // Remove a single instance of the specified element from this queue, if it is present.
 func (sf *Queue) Remove(val interface{}) {
 	for pre, e := sf.head, sf.head; e != nil; {
-		if sf.compare(val, e.value) {
+		if sf.Compare(val, e.value) {
 			if sf.head == e && sf.tail == e {
 				sf.head, sf.tail = nil, nil
 			} else if sf.head == e {
@@ -123,9 +124,9 @@ func (sf *Queue) Remove(val interface{}) {
 	}
 }
 
-func (sf *Queue) compare(v1, v2 interface{}) bool {
-	if sf.cmp == nil {
-		return comparator.Compare(v1, v2) == 0
+func (sf *Queue) Compare(v1, v2 interface{}) bool {
+	if sf.compare == nil {
+		return reflect.DeepEqual(v1, v2)
 	}
-	return sf.cmp.Compare(v1, v2) == 0
+	return sf.compare(v1, v2) == 0
 }

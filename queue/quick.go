@@ -1,8 +1,9 @@
 package queue
 
 import (
+	"reflect"
+
 	"github.com/things-go/container"
-	"github.com/things-go/container/comparator"
 )
 
 var _ container.Queue = (*QuickQueue)(nil)
@@ -12,7 +13,7 @@ type QuickQueue struct {
 	headPos int
 	head    []interface{}
 	tail    []interface{}
-	cmp     comparator.Comparator
+	compare container.Comparator
 }
 
 // NewQuickQueue new quick queue.
@@ -24,7 +25,7 @@ func NewQuickQueue(opts ...Option) *QuickQueue {
 	return q
 }
 
-func (sf *QuickQueue) apply(c comparator.Comparator) { sf.cmp = c }
+func (sf *QuickQueue) apply(c container.Comparator) { sf.compare = c }
 
 // Len returns the length of this queue.
 func (sf *QuickQueue) Len() int { return len(sf.head) - sf.headPos + len(sf.tail) }
@@ -67,12 +68,12 @@ func (sf *QuickQueue) Poll() interface{} {
 // Contains returns true if this queue contains the specified element.
 func (sf *QuickQueue) Contains(val interface{}) bool {
 	for i := sf.headPos; i < len(sf.head); i++ {
-		if sf.compare(sf.head[i], val) {
+		if sf.Compare(sf.head[i], val) {
 			return true
 		}
 	}
 	for _, v := range sf.tail {
-		if sf.compare(v, val) {
+		if sf.Compare(v, val) {
 			return true
 		}
 	}
@@ -85,7 +86,7 @@ func (sf *QuickQueue) Remove(val interface{}) {
 	var idx int
 
 	for i := sf.headPos; i < len(sf.head); i++ {
-		if sf.compare(sf.head[i], val) {
+		if sf.Compare(sf.head[i], val) {
 			idx, found = i, true
 			break
 		}
@@ -104,7 +105,7 @@ func (sf *QuickQueue) Remove(val interface{}) {
 	}
 
 	for i, v := range sf.tail {
-		if sf.compare(v, val) {
+		if sf.Compare(v, val) {
 			idx, found = i, true
 			break
 		}
@@ -116,11 +117,11 @@ func (sf *QuickQueue) Remove(val interface{}) {
 	}
 }
 
-func (sf *QuickQueue) compare(v1, v2 interface{}) bool {
-	if sf.cmp == nil {
-		return comparator.Compare(v1, v2) == 0
+func (sf *QuickQueue) Compare(v1, v2 interface{}) bool {
+	if sf.compare == nil {
+		return reflect.DeepEqual(v1, v2)
 	}
-	return sf.cmp.Compare(v1, v2) == 0
+	return sf.compare(v1, v2) == 0
 }
 
 func moveLastToFirst(items []interface{}) {

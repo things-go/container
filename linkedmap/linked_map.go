@@ -16,9 +16,9 @@ package linkedmap
 
 import (
 	"container/list"
+	"reflect"
 
 	"github.com/things-go/container"
-	"github.com/things-go/container/comparator"
 )
 
 var _ container.LinkedMap = (*LinkedMap)(nil)
@@ -31,7 +31,7 @@ type store struct {
 type LinkedMap struct {
 	data     map[interface{}]*list.Element
 	ll       *list.List
-	cmp      comparator.Comparator
+	compare  container.Comparator
 	capacity int
 }
 
@@ -46,9 +46,9 @@ func WithCap(capacity int) Option {
 }
 
 // WithComparator with user's Comparator.
-func WithComparator(cmp comparator.Comparator) Option {
+func WithComparator(cmp container.Comparator) Option {
 	return func(lm *LinkedMap) {
-		lm.cmp = cmp
+		lm.compare = cmp
 	}
 }
 
@@ -182,7 +182,7 @@ func (sf *LinkedMap) Contains(k interface{}) bool {
 // ContainsValue returns true if this map maps one or more keys to the specified value.
 func (sf *LinkedMap) ContainsValue(v interface{}) bool {
 	for e := sf.ll.Front(); e != nil; e = e.Next() {
-		if sf.compare(e.Value.(*store).value, v) {
+		if sf.Compare(e.Value.(*store).value, v) {
 			return true
 		}
 	}
@@ -244,9 +244,9 @@ func (sf *LinkedMap) ReverseIterator(cb func(k, v interface{}) bool) {
 	}
 }
 
-func (sf *LinkedMap) compare(v1, v2 interface{}) bool {
-	if sf.cmp != nil {
-		return sf.cmp.Compare(v1, v2) == 0
+func (sf *LinkedMap) Compare(v1, v2 interface{}) bool {
+	if sf.compare != nil {
+		return sf.compare(v1, v2) == 0
 	}
-	return comparator.Compare(v1, v2) == 0
+	return reflect.DeepEqual(v1, v2)
 }

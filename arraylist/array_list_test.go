@@ -105,7 +105,7 @@ func TestArrayListValue(t *testing.T) {
 }
 
 func TestUserCompare(t *testing.T) {
-	ll := New(WithComparator(&arrayListNode{}))
+	ll := New(WithComparator(CompareArrayListNode))
 	ll.PushBack(&arrayListNode{age: 32})
 	ll.PushBack(&arrayListNode{age: 20})
 	ll.PushBack(&arrayListNode{age: 27})
@@ -226,7 +226,7 @@ func TestExtending(t *testing.T) {
 
 func TestArrayListComparatorSort(t *testing.T) {
 	expect := []*arrayListNode{{age: 20}, {age: 25}, {age: 27}, {age: 32}}
-	ll := New(WithComparator(&arrayListNode{}))
+	ll := New(WithComparator(CompareArrayListNode))
 	ll.PushBack(&arrayListNode{age: 32})
 	ll.PushBack(&arrayListNode{age: 20})
 	ll.PushBack(&arrayListNode{age: 27})
@@ -261,7 +261,7 @@ type arrayListNode struct {
 	age int
 }
 
-func (aln *arrayListNode) Compare(v1, v2 interface{}) int {
+func CompareArrayListNode(v1, v2 interface{}) int {
 	n1, n2 := v1.(*arrayListNode), v2.(*arrayListNode)
 
 	if n1.age < n2.age {

@@ -17,6 +17,8 @@ package comparator
 import (
 	"container/heap"
 	"sort"
+
+	"github.com/things-go/container"
 )
 
 var (
@@ -25,16 +27,20 @@ var (
 )
 
 // NewContainer new container with value slice and Comparator
-func NewContainer(values []interface{}, c Comparator) *Container {
-	return &Container{Items: values, Cmp: c}
+func NewContainer(values []interface{}, c container.Comparator) *Container {
+	return &Container{Items: values, compare: c}
 }
 
 // Container for sort or heap sort, it implement sort.Interface and heap.Interface.
 type Container struct {
-	noCopy  noCopy        // nolint: structcheck,unused
-	Items   []interface{} // item slice
-	Cmp     Comparator    // if nil, use default Compare
-	reverse bool          // reverse sort or heap
+	noCopy  noCopy               // nolint: structcheck,unused
+	Items   []interface{}        // item slice
+	compare container.Comparator // if nil, use default Compare
+	reverse bool                 // reverse sort or heap
+}
+
+func (sf *Container) SetComparator(c container.Comparator) {
+	sf.compare = c
 }
 
 // Len implement heap.Interface.
@@ -78,10 +84,10 @@ func (sf *Container) Reverse() *Container {
 
 // Compare compares its two arguments use Cmp if exist
 func (sf *Container) Compare(v1, v2 interface{}) int {
-	if sf.Cmp == nil {
+	if sf.compare == nil {
 		return Compare(v1, v2)
 	}
-	return sf.Cmp.Compare(v1, v2)
+	return sf.compare(v1, v2)
 }
 
 // Sort sorts values into ascending sequence according to their natural ordering,

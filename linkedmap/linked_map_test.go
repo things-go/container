@@ -181,7 +181,7 @@ func TestLinkedMapIterate(t *testing.T) {
 }
 
 func TestLinkedMapComparator(t *testing.T) {
-	lm := New(WithComparator(&student{}))
+	lm := New(WithComparator(CompareStudent))
 
 	lm.Push(1, &student{name: "benjamin", age: 34})
 	lm.Push(2, &student{name: "alice", age: 21})
@@ -199,7 +199,7 @@ type student struct {
 }
 
 // Compare returns -1, 0 or 1 when the first student's age is greater, equal to, or less than the second student's age.
-func (s *student) Compare(v1, v2 interface{}) int {
+func CompareStudent(v1, v2 interface{}) int {
 	s1, s2 := v1.(*student), v2.(*student)
 	if s1.age < s2.age {
 		return 1

@@ -87,7 +87,7 @@ func TestPriorityQueueMinHeap(t *testing.T) {
 }
 
 func TestPriorityQueueMinHeapWithComparator(t *testing.T) {
-	pq := New(WithComparator(&myInt{}))
+	pq := New(WithComparator(CompareMyInt))
 	pqTestPriorityQueueSortImpl(t, pq, []interface{}{15, 19, 12, 8, 13}, []interface{}{19, 15, 13, 12, 8})
 }
 
@@ -97,7 +97,7 @@ func TestPriorityQueueMaxHeap(t *testing.T) {
 }
 
 func TestPriorityQueueMaxHeapWithComparator(t *testing.T) {
-	q := New(WithComparator(&myInt{}), WithMaxHeap())
+	q := New(WithComparator(CompareMyInt), WithMaxHeap())
 	pqTestPriorityQueueSortImpl(t, q, []interface{}{15, 19, 12, 8, 13}, []interface{}{8, 12, 13, 15, 19})
 }
 
@@ -119,7 +119,7 @@ func TestPriorityQueueDeleteMinHeap(t *testing.T) {
 }
 
 func TestPriorityQueueDeleteMinHeapWithComparator(t *testing.T) {
-	pq := New(WithComparator(&myInt{}))
+	pq := New(WithComparator(CompareMyInt))
 	pqTestPriorityQueueDeleteImpl(t, pq, []interface{}{15, 19, 12, 8, 13}, []interface{}{19, 13, 12, 8}, 15)
 }
 
@@ -129,7 +129,7 @@ func TestPriorityQueueDeleteMaxHeap(t *testing.T) {
 }
 
 func TestPriorityQueueDeleteMaxHeapWithComparator(t *testing.T) {
-	pq := New(WithComparator(&myInt{}), WithMaxHeap())
+	pq := New(WithComparator(CompareMyInt), WithMaxHeap())
 	pqTestPriorityQueueDeleteImpl(t, pq, []interface{}{15, 19, 12, 8, 13}, []interface{}{12, 13, 15, 19}, 8)
 }
 
@@ -147,10 +147,8 @@ func pqTestPriorityQueueDeleteImpl(t *testing.T, q *Queue, input, expected []int
 	require.Zero(t, q.Len())
 }
 
-type myInt struct{}
-
 // Compare returns reverse order.
-func (i myInt) Compare(v1, v2 interface{}) int {
+func CompareMyInt(v1, v2 interface{}) int {
 	i1, i2 := v1.(int), v2.(int)
 	if i1 < i2 {
 		return 1
@@ -162,7 +160,7 @@ func (i myInt) Compare(v1, v2 interface{}) int {
 }
 
 func TestPQComparator(t *testing.T) {
-	pq := New(WithComparator(&student{}))
+	pq := New(WithComparator(CompareStudent))
 
 	pq.Add(&student{name: "benjamin", age: 34})
 	pq.Add(&student{name: "alice", age: 21})
@@ -209,7 +207,7 @@ type student struct {
 }
 
 // Compare returns -1, 0 or 1 when the first student's age is greater, equal to, or less than the second student's age.
-func (s *student) Compare(v1, v2 interface{}) int {
+func CompareStudent(v1, v2 interface{}) int {
 	s1, s2 := v1.(*student), v2.(*student)
 	if s1.age < s2.age {
 		return 1

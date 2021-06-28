@@ -36,9 +36,9 @@ type Queue struct {
 type Option func(q *Queue)
 
 // WithComparator with user's Comparator.
-func WithComparator(cmp comparator.Comparator) Option {
+func WithComparator(cmp container.Comparator) Option {
 	return func(q *Queue) {
-		q.data.Cmp = cmp
+		q.data.SetComparator(cmp)
 	}
 }
 
