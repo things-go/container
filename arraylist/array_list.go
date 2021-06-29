@@ -35,7 +35,8 @@ type List struct {
 // Option option for New.
 type Option func(l *List)
 
-// WithComparator with user's Comparator.
+// WithComparator with custom Comparator.
+// default reflect.DeepEqual
 func WithComparator(cmp container.Comparator) Option {
 	return func(l *List) {
 		l.compare = cmp
@@ -264,11 +265,13 @@ func (sf *List) indexOf(val interface{}) int {
 	return -1
 }
 
+// Compare compare use custom Comparator.
+// if not set, use reflect.DeepEqual
 func (sf *List) Compare(v1, v2 interface{}) bool {
-	if sf.compare != nil {
-		return sf.compare(v1, v2) == 0
+	if sf.compare == nil {
+		return reflect.DeepEqual(v1, v2)
 	}
-	return reflect.DeepEqual(v1, v2)
+	return sf.compare(v1, v2) == 0
 }
 
 func moveLastToFirst(items []interface{}) {

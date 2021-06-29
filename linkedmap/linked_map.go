@@ -45,7 +45,8 @@ func WithCap(capacity int) Option {
 	}
 }
 
-// WithComparator with user's Comparator.
+// WithComparator with custom Comparator.
+// default reflect.DeepEqual
 func WithComparator(cmp container.Comparator) Option {
 	return func(lm *LinkedMap) {
 		lm.compare = cmp
@@ -244,6 +245,8 @@ func (sf *LinkedMap) ReverseIterator(cb func(k, v interface{}) bool) {
 	}
 }
 
+// Compare compare use custom Comparator.
+// if not set, use reflect.DeepEqual
 func (sf *LinkedMap) Compare(v1, v2 interface{}) bool {
 	if sf.compare != nil {
 		return sf.compare(v1, v2) == 0

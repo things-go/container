@@ -12,7 +12,8 @@ type Apply interface {
 // Option option for New.
 type Option func(a Apply)
 
-// WithComparator with user's Comparator.
+// WithComparator compare use custom Comparator.
+// if not set, use reflect.DeepEqual
 func WithComparator(c container.Comparator) Option {
 	return func(a Apply) {
 		a.apply(c)

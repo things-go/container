@@ -36,7 +36,8 @@ type LinkedList struct {
 // Option option for New.
 type Option func(l *LinkedList)
 
-// WithComparator with user's Comparator.
+// WithComparator with custom Comparator.
+// default reflect.DeepEqual
 func WithComparator(cmp container.Comparator) Option {
 	return func(l *LinkedList) {
 		l.compare = cmp
@@ -258,6 +259,8 @@ func (sf *LinkedList) indexOf(val interface{}) int {
 	return -1
 }
 
+// Compare compare use custom Comparator.
+// if not set, use reflect.DeepEqual
 func (sf *LinkedList) Compare(v1, v2 interface{}) bool {
 	if sf.compare != nil {
 		return sf.compare(v1, v2) == 0

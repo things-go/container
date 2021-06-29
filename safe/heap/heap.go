@@ -1,4 +1,4 @@
-// This file implements a heap data structure.
+// Package heap This file implements a heap data structure.
 package heap
 
 import (

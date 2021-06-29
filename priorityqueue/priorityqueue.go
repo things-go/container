@@ -35,7 +35,8 @@ type Queue struct {
 // Option option for New.
 type Option func(q *Queue)
 
-// WithComparator with user's Comparator.
+// WithComparator with custom Comparator.
+// default reflect.DeepEqual
 func WithComparator(cmp container.Comparator) Option {
 	return func(q *Queue) {
 		q.data.SetComparator(cmp)

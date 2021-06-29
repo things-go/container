@@ -39,6 +39,7 @@ type Container struct {
 	reverse bool                 // reverse sort or heap
 }
 
+// SetComparator set comparator
 func (sf *Container) SetComparator(c container.Comparator) {
 	sf.compare = c
 }

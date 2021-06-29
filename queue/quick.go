@@ -117,6 +117,8 @@ func (sf *QuickQueue) Remove(val interface{}) {
 	}
 }
 
+// Compare compare use custom Comparator.
+// if not set, use reflect.DeepEqual
 func (sf *QuickQueue) Compare(v1, v2 interface{}) bool {
 	if sf.compare == nil {
 		return reflect.DeepEqual(v1, v2)
