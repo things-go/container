@@ -14,14 +14,14 @@ import (
 // ErrHeapClosed used when heap is closed.
 var ErrHeapClosed = errors.New("heap is closed")
 
-type heapItem struct {
-	obj   interface{} // The object which is stored in the heap.
-	index int         // The index of the object's key in the Heap.queue.
-}
-
 type itemKeyValue struct {
 	key string
 	obj interface{}
+}
+
+type heapItem struct {
+	index int         // The index of the object's key in the Heap.queue.
+	obj   interface{} // The object which is stored in the heap.
 }
 
 // heapData is an internal struct that implements the standard heap interface
@@ -75,14 +75,14 @@ func (h *heapData) Swap(i, j int) {
 func (h *heapData) Push(kv interface{}) {
 	keyValue := kv.(*itemKeyValue)
 	n := len(h.queue)
-	h.items[keyValue.key] = &heapItem{keyValue.obj, n}
+	h.items[keyValue.key] = &heapItem{n, keyValue.obj}
 	h.queue = append(h.queue, keyValue.key)
 }
 
 // Pop is supposed to be called by heap.Pop only.
 func (h *heapData) Pop() interface{} {
 	key := h.queue[len(h.queue)-1]
-	h.queue = h.queue[0 : len(h.queue)-1]
+	h.queue = h.queue[:len(h.queue)-1]
 	item, ok := h.items[key]
 	if !ok {
 		// This is an error
@@ -282,7 +282,7 @@ func (sf *Heap) Delete(obj interface{}) error {
 func (sf *Heap) Pop() (interface{}, error) {
 	sf.rw.Lock()
 	defer sf.rw.Unlock()
-	for len(sf.data.queue) == 0 {
+	for sf.data.Len() == 0 {
 		// When the queue is empty, invocation of Pop() is blocked until new item is enqueued.
 		// When Close() is called, the h.closed is set and the condition is broadcast,
 		// which causes this loop to continue and return from the Pop().
@@ -295,7 +295,6 @@ func (sf *Heap) Pop() (interface{}, error) {
 	if obj == nil {
 		return nil, fmt.Errorf("object was removed from heap data")
 	}
-
 	return obj, nil
 }
 
