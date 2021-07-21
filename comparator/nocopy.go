@@ -8,5 +8,5 @@ package comparator
 type noCopy struct{} // nolint: unused
 
 // Lock is a no-op used by -copylocks checker from `go vet`.
-func (*noCopy) Lock()   {}
-func (*noCopy) Unlock() {}
+func (*noCopy) Lock()   {} // nolint: unused
+func (*noCopy) Unlock() {} // nolint: unused
