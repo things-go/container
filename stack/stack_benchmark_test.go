@@ -13,7 +13,7 @@ func BenchmarkStack(b *testing.B) {
 }
 
 func BenchmarkQuickStack(b *testing.B) {
-	q := NewQuickStack()
+	q := NewQuickStack[int]()
 	for i := 0; i < b.N; i++ {
 		q.Push(1)
 		q.Pop()

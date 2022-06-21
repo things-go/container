@@ -346,7 +346,7 @@ func (sf *FIFO) Resync() error {
 	sf.rw.Lock()
 	defer sf.rw.Unlock()
 
-	inQueue := sets.NewString().Insert(sf.queue...)
+	inQueue := sets.New(sf.queue...)
 	for key := range sf.items {
 		if !inQueue.Contains(key) {
 			sf.queue = append(sf.queue, key)
