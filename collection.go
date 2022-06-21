@@ -1,7 +1,7 @@
 package container
 
 // Stack is a Stack interface, which is LIFO (last-in-first-out).
-type Stack interface {
+type Stack[T any] interface {
 	// Len returns the number of elements in the collection.
 	Len() int
 	// IsEmpty returns true if this container contains no elements.
@@ -9,11 +9,11 @@ type Stack interface {
 	// Clear initializes or clears all of the elements from this container.
 	Clear()
 	// Push pushes an element into this Stack.
-	Push(interface{})
+	Push(T)
 	// Pop pops the element on the top of this Stack.
-	Pop() interface{}
-	// Peek retrieves, but does not remove, the element on the top of this Stack, or return nil if this Stack is empty.
-	Peek() interface{}
+	Pop() (T, bool)
+	// Peek retrieves, but does not remove, the element on the top of this Stack, or return false if this Stack is empty.
+	Peek() (T, bool)
 }
 
 // Queue is a type of Queue, which is FIFO(first-in-first-out).
