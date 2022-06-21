@@ -7,8 +7,8 @@ import (
 )
 
 func TestStack(t *testing.T) {
-	s := New()
-	s.Push(5)
+	s := New[string]()
+	s.Push("5")
 	s.Push("hello")
 
 	// length
@@ -16,31 +16,31 @@ func TestStack(t *testing.T) {
 	assert.False(t, s.IsEmpty())
 
 	// Peek "hello"
-	val1, ok := s.Peek().(string)
+	val1, ok := s.Peek()
 	assert.True(t, ok)
 	assert.Equal(t, "hello", val1)
 
 	// Pop "hello"
-	val2, ok := s.Pop().(string)
+	val2, ok := s.Pop()
 	assert.True(t, ok)
 	assert.Equal(t, "hello", val2)
 
 	// Peek 5
-	val3, ok := s.Peek().(int)
+	val3, ok := s.Peek()
 	assert.True(t, ok)
-	assert.Equal(t, 5, val3)
+	assert.Equal(t, "5", val3)
 
 	// Pop 5
-	val4, ok := s.Pop().(int)
+	val4, ok := s.Pop()
 	assert.True(t, ok)
-	assert.Equal(t, 5, val4)
+	assert.Equal(t, "5", val4)
 
-	val5 := s.Pop()
+	val5, ok := s.Pop()
+	assert.False(t, ok)
 	assert.Nil(t, val5)
-	assert.Nil(t, s.Peek())
 
-	s.Push(5)
-	s.Push(6)
+	s.Push("5")
+	s.Push("6")
 	assert.False(t, s.IsEmpty())
 	s.Clear()
 	assert.True(t, s.IsEmpty())

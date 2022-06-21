@@ -16,46 +16,44 @@
 package stack
 
 import (
-	"container/list"
-
-	"github.com/things-go/container"
+	"github.com/things-go/container/internal/list"
 )
 
-var _ container.Stack = (*Stack)(nil)
+// var _ container.Stack = (*Stack)(nil)
 
 // Stack is LIFO implement list.List.
-type Stack struct {
-	ll *list.List
+type Stack[T any] struct {
+	ll *list.List[T]
 }
 
 // New creates a Stack. which implement interface stack.Interface.
-func New() *Stack { return &Stack{list.New()} }
+func New[T any]() *Stack[T] { return &Stack[T]{list.New[T]()} }
 
 // Len returns the length of this priority queue.
-func (sf *Stack) Len() int { return sf.ll.Len() }
+func (sf *Stack[T]) Len() int { return sf.ll.Len() }
 
 // IsEmpty returns true if this Stack contains no elements.
-func (sf *Stack) IsEmpty() bool { return sf.ll.Len() == 0 }
+func (sf *Stack[T]) IsEmpty() bool { return sf.ll.Len() == 0 }
 
 // Clear removes all the elements from this Stack.
-func (sf *Stack) Clear() { sf.ll.Init() }
+func (sf *Stack[T]) Clear() { sf.ll.Init() }
 
 // Push pushes an element into this Stack.
-func (sf *Stack) Push(val interface{}) { sf.ll.PushFront(val) }
+func (sf *Stack[T]) Push(val T) { sf.ll.PushFront(val) }
 
 // Pop pops the element on the top of this Stack.
-func (sf *Stack) Pop() interface{} {
+func (sf *Stack[T]) Pop() (v T, ok bool) {
 	if e := sf.ll.Front(); e != nil {
-		return sf.ll.Remove(e)
+		return sf.ll.Remove(e), true
 	}
-	return nil
+	return v, false
 }
 
 // Peek retrieves, but does not remove,
 // the element on the top of this Stack, or return nil if this Stack is empty.
-func (sf *Stack) Peek() interface{} {
+func (sf *Stack[T]) Peek() (v T, ok bool) {
 	if e := sf.ll.Front(); e != nil {
-		return e.Value
+		return e.Value, true
 	}
-	return nil
+	return v, false
 }

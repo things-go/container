@@ -5,7 +5,7 @@ import (
 )
 
 func BenchmarkStack(b *testing.B) {
-	q := New()
+	q := New[int]()
 	for i := 0; i < b.N; i++ {
 		q.Push(1)
 		q.Pop()
