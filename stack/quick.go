@@ -1,6 +1,10 @@
 package stack
 
-// var _ container.Stack = (*QuickStack[string])(nil)
+import (
+	"github.com/things-go/container"
+)
+
+var _ container.Stack[string] = (*QuickStack[string])(nil)
 
 // QuickStack is quick LIFO stack implement with slice.
 type QuickStack[T any] struct {

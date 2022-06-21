@@ -16,10 +16,11 @@
 package stack
 
 import (
+	"github.com/things-go/container"
 	"github.com/things-go/container/internal/list"
 )
 
-// var _ container.Stack = (*Stack)(nil)
+var _ container.Stack[int] = (*Stack[int])(nil)
 
 // Stack is LIFO implement list.List.
 type Stack[T any] struct {
@@ -56,4 +57,13 @@ func (sf *Stack[T]) Peek() (v T, ok bool) {
 		return e.Value, true
 	}
 	return v, false
+}
+
+// Copy returns a copy of this stack.
+func (sf *Stack[T]) Clone() *Stack[T] {
+	s := New[T]()
+	for e := sf.ll.Front(); e != nil; e = e.Next() {
+		s.Push(e.Value)
+	}
+	return s
 }

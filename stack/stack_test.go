@@ -37,10 +37,18 @@ func TestStack(t *testing.T) {
 
 	val5, ok := s.Pop()
 	assert.False(t, ok)
-	assert.Nil(t, val5)
+	assert.Zero(t, val5)
+
+	val6, ok := s.Peek()
+	assert.False(t, ok)
+	assert.Zero(t, val6)
 
 	s.Push("5")
 	s.Push("6")
+
+	s1 := s.Clone()
+	assert.Equal(t, 2, s1.Len())
+
 	assert.False(t, s.IsEmpty())
 	s.Clear()
 	assert.True(t, s.IsEmpty())
