@@ -1,4 +1,4 @@
-// Copyright [2020] [thinkgos]
+// Copyright [2022] [thinkgos]
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package priorityqueue
+package queue
 
 import (
 	"testing"
@@ -24,7 +24,7 @@ import (
 
 func TestPriorityQueueLen(t *testing.T) {
 	// init 3 elements
-	q := New[int](false, 5, 6, 7)
+	q := NewPriorityQueue[int](false, 5, 6, 7)
 
 	require.Equal(t, 3, q.Len())
 	require.False(t, q.IsEmpty())
@@ -49,7 +49,7 @@ func TestPriorityQueueLen(t *testing.T) {
 
 func TestPriorityQueueValue(t *testing.T) {
 	// create priority queue
-	q := New[int](false)
+	q := NewPriorityQueue[int](false)
 	q.Add(15)
 	q.Add(19)
 	q.Add(12)
@@ -90,16 +90,16 @@ func TestPriorityQueueValue(t *testing.T) {
 }
 
 func TestPriorityQueueMinHeap(t *testing.T) {
-	pq := New[int](false)
+	pq := NewPriorityQueue[int](false)
 	pqTestPriorityQueueSortImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{8, 12, 13, 15, 19})
 }
 
 func TestPriorityQueueMaxHeap(t *testing.T) {
-	pq := New[int](true)
+	pq := NewPriorityQueue[int](true)
 	pqTestPriorityQueueSortImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{19, 15, 13, 12, 8})
 }
 
-func pqTestPriorityQueueSortImpl[T constraints.Ordered](t *testing.T, q *Queue[T], input, expected []T) {
+func pqTestPriorityQueueSortImpl[T constraints.Ordered](t *testing.T, q *PriorityQueue[T], input, expected []T) {
 	for i := 0; i < len(input); i++ {
 		q.Add(input[i])
 	}
@@ -114,21 +114,21 @@ func pqTestPriorityQueueSortImpl[T constraints.Ordered](t *testing.T, q *Queue[T
 }
 
 func TestPriorityQueueDeleteMinHeap(t *testing.T) {
-	pq := New[int](false)
+	pq := NewPriorityQueue[int](false)
 	pqTestPriorityQueueDeleteImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{8, 12, 13, 15}, 19)
 }
 
 func TestPriorityQueueDeleteMinHeapWithComparator(t *testing.T) {
-	pq := New[int](true)
+	pq := NewPriorityQueue[int](true)
 	pqTestPriorityQueueDeleteImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{19, 13, 12, 8}, 15)
 }
 
 func TestPriorityQueueDeleteMaxHeap(t *testing.T) {
-	pq := New[int](true)
+	pq := NewPriorityQueue[int](true)
 	pqTestPriorityQueueDeleteImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{19, 15, 13, 8}, 12)
 }
 
-func pqTestPriorityQueueDeleteImpl[T constraints.Ordered](t *testing.T, q *Queue[T], input, expected []T, val T) {
+func pqTestPriorityQueueDeleteImpl[T constraints.Ordered](t *testing.T, q *PriorityQueue[T], input, expected []T, val T) {
 	for i := 0; i < len(input); i++ {
 		q.Add(input[i])
 	}

@@ -6,10 +6,6 @@ import (
 
 var _ container.Queue[int] = (*QuickQueue[int])(nil)
 
-type Comparator[T comparable] interface {
-	CompareTo(T) int
-}
-
 // QuickQueue implement with slice.
 type QuickQueue[T comparable] struct {
 	headPos int
@@ -21,8 +17,6 @@ type QuickQueue[T comparable] struct {
 func NewQuickQueue[T comparable]() *QuickQueue[T] {
 	return new(QuickQueue[T])
 }
-
-// func (sf *QuickQueue) apply(c container.Comparator) { sf.compare = c }
 
 // Len returns the length of this queue.
 func (sf *QuickQueue[T]) Len() int { return len(sf.head) - sf.headPos + len(sf.tail) }

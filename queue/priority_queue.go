@@ -1,4 +1,4 @@
-// Copyright [2020] [thinkgos]
+// Copyright [2022] [thinkgos]
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package priorityqueue implements an unbounded priority queue based on a priority heap.
-// The elements of the priority queue are ordered according to their natural ordering,
-// or by a Comparator provided at PriorityQueue construction time.
-package priorityqueue
+package queue
 
 import (
 	"golang.org/x/exp/constraints"
@@ -24,20 +21,20 @@ import (
 	"github.com/things-go/container/core/heap"
 )
 
-// var _ container.Queue[int] = (*Queue[int])(nil)
+var _ container.Queue[int] = (*PriorityQueue[int])(nil)
 
-// Queue represents an unbounded priority queue based on a priority heap.
+// PriorityQueue represents an unbounded priority queue based on a priority heap.
 // It implements heap.Interface.
-type Queue[T constraints.Ordered] struct {
+type PriorityQueue[T constraints.Ordered] struct {
 	data *container.Container[T]
 }
 
-// Option for New.
-type Option[T constraints.Ordered] func(q *Queue[T])
+// Option for NewPriorityQueue.
+type Option[T constraints.Ordered] func(q *PriorityQueue[T])
 
-// New initializes and returns an Queue, default min heap.
-func New[T constraints.Ordered](maxHeap bool, items ...T) *Queue[T] {
-	q := &Queue[T]{
+// NewPriorityQueue initializes and returns an Queue, default min heap.
+func NewPriorityQueue[T constraints.Ordered](maxHeap bool, items ...T) *PriorityQueue[T] {
+	q := &PriorityQueue[T]{
 		data: &container.Container[T]{
 			items,
 			maxHeap,
@@ -48,21 +45,21 @@ func New[T constraints.Ordered](maxHeap bool, items ...T) *Queue[T] {
 }
 
 // Len returns the length of this priority queue.
-func (sf *Queue[T]) Len() int { return sf.data.Len() }
+func (sf *PriorityQueue[T]) Len() int { return sf.data.Len() }
 
 // IsEmpty returns true if this list contains no elements.
-func (sf *Queue[T]) IsEmpty() bool { return sf.Len() == 0 }
+func (sf *PriorityQueue[T]) IsEmpty() bool { return sf.Len() == 0 }
 
 // Clear removes all the elements from this priority queue.
-func (sf *Queue[T]) Clear() { sf.data.Items = make([]T, 0) }
+func (sf *PriorityQueue[T]) Clear() { sf.data.Items = make([]T, 0) }
 
 // Add inserts the specified element into this priority queue.
-func (sf *Queue[T]) Add(items T) {
+func (sf *PriorityQueue[T]) Add(items T) {
 	heap.Push[T](sf.data, items)
 }
 
 // Peek retrieves, but does not remove, the head of this queue, or return nil if this queue is empty.
-func (sf *Queue[T]) Peek() (val T, exist bool) {
+func (sf *PriorityQueue[T]) Peek() (val T, exist bool) {
 	if sf.Len() > 0 {
 		return sf.data.Items[0], true
 	}
@@ -70,7 +67,7 @@ func (sf *Queue[T]) Peek() (val T, exist bool) {
 }
 
 // Poll retrieves and removes the head of the this queue, or return nil if this queue is empty.
-func (sf *Queue[T]) Poll() (val T, exist bool) {
+func (sf *PriorityQueue[T]) Poll() (val T, exist bool) {
 	if sf.Len() > 0 {
 		return heap.Pop[T](sf.data), true
 	}
@@ -78,17 +75,17 @@ func (sf *Queue[T]) Poll() (val T, exist bool) {
 }
 
 // Contains returns true if this queue contains the specified element.
-func (sf *Queue[T]) Contains(val T) bool { return sf.indexOf(val) >= 0 }
+func (sf *PriorityQueue[T]) Contains(val T) bool { return sf.indexOf(val) >= 0 }
 
 // Remove a single instance of the specified element from this queue, if it is present.
 // It returns false if the target value isn't present, otherwise returns true.
-func (sf *Queue[T]) Remove(val T) {
+func (sf *PriorityQueue[T]) Remove(val T) {
 	if idx := sf.indexOf(val); idx >= 0 {
 		heap.Remove[T](sf.data, idx)
 	}
 }
 
-func (sf *Queue[T]) indexOf(val T) int {
+func (sf *PriorityQueue[T]) indexOf(val T) int {
 	if sf.Len() > 0 {
 		for i := 0; i < sf.Len(); i++ {
 			if val == sf.data.Items[i] {
