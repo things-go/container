@@ -15,50 +15,41 @@
 package queue
 
 import (
-	"reflect"
-
 	"github.com/things-go/container"
 )
 
-var _ container.Queue = (*Queue)(nil)
+var _ container.Queue[int] = (*Queue[int])(nil)
 
 // element is an element of the Queue implement with list.
-type element struct {
-	next  *element
-	value interface{}
+type element[T comparable] struct {
+	next  *element[T]
+	value T
 }
 
 // Queue represents a singly linked list.
-type Queue struct {
-	head    *element
-	tail    *element
-	length  int
-	compare container.Comparator
+type Queue[T comparable] struct {
+	head   *element[T]
+	tail   *element[T]
+	length int
 }
 
 // New creates a Queue. which implement queue.Interface.
-func New(opts ...Option) *Queue {
-	q := new(Queue)
-	for _, opt := range opts {
-		opt(q)
-	}
-	return q
+func New[T comparable]() *Queue[T] {
+	return new(Queue[T])
 }
 
-func (sf *Queue) apply(c container.Comparator) { sf.compare = c }
-
 // Len returns the length of this queue.
-func (sf *Queue) Len() int { return sf.length }
+func (sf *Queue[T]) Len() int { return sf.length }
 
 // IsEmpty returns true if this Queue contains no elements.
-func (sf *Queue) IsEmpty() bool { return sf.Len() == 0 }
+func (sf *Queue[T]) IsEmpty() bool { return sf.Len() == 0 }
 
 // Clear initializes or clears queue.
-func (sf *Queue) Clear() { sf.head, sf.tail, sf.length = nil, nil, 0 }
+func (sf *Queue[T]) Clear() { sf.head, sf.tail, sf.length = nil, nil, 0 }
 
 // Add items to the queue.
-func (sf *Queue) Add(v interface{}) {
-	e := &element{value: v}
+func (sf *Queue[T]) Add(v T) {
+	e := &element[T]{value: v}
 	if sf.tail == nil {
 		sf.head, sf.tail = e, e
 	} else {
@@ -69,32 +60,31 @@ func (sf *Queue) Add(v interface{}) {
 }
 
 // Peek retrieves, but does not remove, the head of this Queue, or return nil if this Queue is empty.
-func (sf *Queue) Peek() interface{} {
+func (sf *Queue[T]) Peek() (v T, ok bool) {
 	if sf.head != nil {
-		return sf.head.value
+		return sf.head.value, true
 	}
-	return nil
+	return v, false
 }
 
 // Poll retrieves and removes the head of the this Queue, or return nil if this Queue is empty.
-func (sf *Queue) Poll() interface{} {
-	var val interface{}
-
+func (sf *Queue[T]) Poll() (v T, ok bool) {
 	if sf.head != nil {
-		val = sf.head.value
+		v = sf.head.value
 		sf.head = sf.head.next
 		if sf.head == nil {
 			sf.tail = nil
 		}
 		sf.length--
+		ok = true
 	}
-	return val
+	return v, ok
 }
 
 // Contains returns true if this queue contains the specified element.
-func (sf *Queue) Contains(val interface{}) bool {
+func (sf *Queue[T]) Contains(val T) bool {
 	for e := sf.head; e != nil; e = e.next {
-		if sf.Compare(val, e.value) {
+		if val == e.value {
 			return true
 		}
 	}
@@ -102,9 +92,9 @@ func (sf *Queue) Contains(val interface{}) bool {
 }
 
 // Remove a single instance of the specified element from this queue, if it is present.
-func (sf *Queue) Remove(val interface{}) {
+func (sf *Queue[T]) Remove(val T) {
 	for pre, e := sf.head, sf.head; e != nil; {
-		if sf.Compare(val, e.value) {
+		if val == e.value {
 			if sf.head == e && sf.tail == e {
 				sf.head, sf.tail = nil, nil
 			} else if sf.head == e {
@@ -122,13 +112,4 @@ func (sf *Queue) Remove(val interface{}) {
 		pre = e
 		e = e.next
 	}
-}
-
-// Compare compare use custom Comparator.
-// if not set, use reflect.DeepEqual
-func (sf *Queue) Compare(v1, v2 interface{}) bool {
-	if sf.compare == nil {
-		return reflect.DeepEqual(v1, v2)
-	}
-	return sf.compare(v1, v2) == 0
 }

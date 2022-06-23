@@ -22,7 +22,7 @@ import (
 )
 
 func TestLinkedMapLen(t *testing.T) {
-	lm := New()
+	lm := New[int, string]()
 	lm.Push(24, "benjamin")
 	lm.Push(43, "alice")
 	lm.Push(18, "john")
@@ -37,7 +37,7 @@ func TestLinkedMapLen(t *testing.T) {
 	// not exist
 	v, ok = lm.Remove(1000)
 	require.False(t, ok)
-	require.Nil(t, v)
+	require.Empty(t, v)
 	require.Equal(t, 2, lm.Len())
 
 	lm.Clear()
@@ -45,18 +45,18 @@ func TestLinkedMapLen(t *testing.T) {
 	require.True(t, lm.IsEmpty())
 
 	// over capacity
-	lm = New(WithCap(3))
+	lm = New[int, string](WithCap[int, string](3))
 
 	// not exist
 	k, v, exist := lm.Peek()
 	require.False(t, exist)
-	assert.Nil(t, k)
-	assert.Nil(t, v)
+	assert.Empty(t, k)
+	assert.Empty(t, v)
 
 	k, v, exist = lm.PeekBack()
 	require.False(t, exist)
-	assert.Nil(t, k)
-	assert.Nil(t, v)
+	assert.Empty(t, k)
+	assert.Empty(t, v)
 
 	lm.Push(24, "benjamin")
 	lm.Push(43, "alice")
@@ -98,14 +98,15 @@ func TestLinkedMapLen(t *testing.T) {
 }
 
 func TestLinkedMapValue(t *testing.T) {
-	lm := New()
+	equal := func(a, b string) bool { return a == b }
+	lm := New[int, string]()
 	keys := []int{24, 43, 18, 23, 35}
 	values := []string{"benjamin", "alice", "john", "tom", "bill"}
 	for i := 0; i < len(keys); i++ {
 		lm.Push(keys[i], values[i])
 	}
 	// not found
-	assert.False(t, lm.ContainsValue("haha"))
+	assert.False(t, lm.ContainsValue("haha", equal))
 
 	// test Contains & ContainsValue
 	for _, k := range keys {
@@ -113,11 +114,11 @@ func TestLinkedMapValue(t *testing.T) {
 	}
 
 	for _, v := range values {
-		assert.True(t, lm.ContainsValue(v))
+		assert.True(t, lm.ContainsValue(v, equal))
 	}
 
 	// not found
-	assert.Nil(t, lm.Get(1000))
+	assert.Empty(t, lm.Get(1000))
 
 	// test Get & GetOrDefault
 	for i, k := range keys {
@@ -143,32 +144,32 @@ func TestLinkedMapValue(t *testing.T) {
 	lm.Clear()
 	k, v, ok = lm.Poll()
 	assert.False(t, ok)
-	assert.Nil(t, k)
-	assert.Nil(t, v)
+	assert.Empty(t, k)
+	assert.Empty(t, v)
 
 	k, v, ok = lm.PollBack()
 	assert.False(t, ok)
-	assert.Nil(t, k)
-	assert.Nil(t, v)
+	assert.Empty(t, k)
+	assert.Empty(t, v)
 }
 
 func TestLinkedMapIterate(t *testing.T) {
-	lm := New()
-	keys := []interface{}{24, 43, 18, 23, 35}
-	values := []interface{}{"benjamin", "alice", "john", "tom", "bill"}
+	lm := New[int, string]()
+	keys := []int{24, 43, 18, 23, 35}
+	values := []string{"benjamin", "alice", "john", "tom", "bill"}
 	for i := 0; i < len(keys); i++ {
 		lm.Push(keys[i], values[i])
 	}
 
 	idx := 0
-	lm.Iterator(func(k interface{}, v interface{}) bool {
+	lm.Iterator(func(k int, v string) bool {
 		assert.Equal(t, keys[idx], k)
 		assert.Equal(t, values[idx], v)
 		idx++
 		return true
 	})
 	idx = lm.Len() - 1
-	lm.ReverseIterator(func(k interface{}, v interface{}) bool {
+	lm.ReverseIterator(func(k int, v string) bool {
 		assert.Equal(t, keys[idx], k)
 		assert.Equal(t, values[idx], v)
 		idx--
@@ -178,34 +179,4 @@ func TestLinkedMapIterate(t *testing.T) {
 	// improve cover
 	lm.Iterator(nil)
 	lm.ReverseIterator(nil)
-}
-
-func TestLinkedMapComparator(t *testing.T) {
-	lm := New(WithComparator(CompareStudent))
-
-	lm.Push(1, &student{name: "benjamin", age: 34})
-	lm.Push(2, &student{name: "alice", age: 21})
-	lm.Push(3, &student{name: "john", age: 42})
-	lm.Push(4, &student{name: "roy", age: 28})
-	lm.Push(5, &student{name: "moss", age: 25})
-
-	assert.True(t, lm.ContainsValue(&student{name: "roy", age: 28}))
-	assert.False(t, lm.ContainsValue(&student{name: "haha", age: 20}))
-}
-
-type student struct {
-	name string
-	age  int
-}
-
-// Compare returns -1, 0 or 1 when the first student's age is greater, equal to, or less than the second student's age.
-func CompareStudent(v1, v2 interface{}) int {
-	s1, s2 := v1.(*student), v2.(*student)
-	if s1.age < s2.age {
-		return 1
-	}
-	if s1.age > s2.age {
-		return -1
-	}
-	return 0
 }

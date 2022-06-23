@@ -18,106 +18,80 @@
 package priorityqueue
 
 import (
-	"container/heap"
+	"golang.org/x/exp/constraints"
 
 	"github.com/things-go/container"
-	"github.com/things-go/container/comparator"
+	"github.com/things-go/container/core/heap"
 )
 
-var _ container.Queue = (*Queue)(nil)
+// var _ container.Queue[int] = (*Queue[int])(nil)
 
 // Queue represents an unbounded priority queue based on a priority heap.
 // It implements heap.Interface.
-type Queue struct {
-	data *comparator.Container
+type Queue[T constraints.Ordered] struct {
+	data *container.Container[T]
 }
 
-// Option option for New.
-type Option func(q *Queue)
-
-// WithComparator with custom Comparator.
-// default reflect.DeepEqual
-func WithComparator(cmp container.Comparator) Option {
-	return func(q *Queue) {
-		q.data.SetComparator(cmp)
-	}
-}
-
-// WithMaxHeap with max heap.
-func WithMaxHeap() Option {
-	return func(q *Queue) {
-		q.data = q.data.Reverse()
-	}
-}
-
-// WithItems with item
-func WithItems(item []interface{}) Option {
-	return func(q *Queue) {
-		if item != nil {
-			q.data.Items = item
-		}
-	}
-}
+// Option for New.
+type Option[T constraints.Ordered] func(q *Queue[T])
 
 // New initializes and returns an Queue, default min heap.
-func New(opts ...Option) *Queue {
-	q := &Queue{
-		&comparator.Container{
-			Items: make([]interface{}, 0),
+func New[T constraints.Ordered](maxHeap bool, items ...T) *Queue[T] {
+	q := &Queue[T]{
+		data: &container.Container[T]{
+			items,
+			maxHeap,
 		},
 	}
-	for _, opt := range opts {
-		opt(q)
-	}
-	heap.Init(q.data)
+	heap.Init[T](q.data)
 	return q
 }
 
 // Len returns the length of this priority queue.
-func (sf *Queue) Len() int { return sf.data.Len() }
+func (sf *Queue[T]) Len() int { return sf.data.Len() }
 
 // IsEmpty returns true if this list contains no elements.
-func (sf *Queue) IsEmpty() bool { return sf.Len() == 0 }
+func (sf *Queue[T]) IsEmpty() bool { return sf.Len() == 0 }
 
-// Clear removes all of the elements from this priority queue.
-func (sf *Queue) Clear() { sf.data.Items = make([]interface{}, 0) }
+// Clear removes all the elements from this priority queue.
+func (sf *Queue[T]) Clear() { sf.data.Items = make([]T, 0) }
 
 // Add inserts the specified element into this priority queue.
-func (sf *Queue) Add(items interface{}) {
-	heap.Push(sf.data, items)
+func (sf *Queue[T]) Add(items T) {
+	heap.Push[T](sf.data, items)
 }
 
 // Peek retrieves, but does not remove, the head of this queue, or return nil if this queue is empty.
-func (sf *Queue) Peek() interface{} {
+func (sf *Queue[T]) Peek() (val T, exist bool) {
 	if sf.Len() > 0 {
-		return sf.data.Items[0]
+		return sf.data.Items[0], true
 	}
-	return nil
+	return val, false
 }
 
 // Poll retrieves and removes the head of the this queue, or return nil if this queue is empty.
-func (sf *Queue) Poll() interface{} {
+func (sf *Queue[T]) Poll() (val T, exist bool) {
 	if sf.Len() > 0 {
-		return heap.Pop(sf.data)
+		return heap.Pop[T](sf.data), true
 	}
-	return nil
+	return val, false
 }
 
 // Contains returns true if this queue contains the specified element.
-func (sf *Queue) Contains(val interface{}) bool { return sf.indexOf(val) >= 0 }
+func (sf *Queue[T]) Contains(val T) bool { return sf.indexOf(val) >= 0 }
 
 // Remove a single instance of the specified element from this queue, if it is present.
 // It returns false if the target value isn't present, otherwise returns true.
-func (sf *Queue) Remove(val interface{}) {
+func (sf *Queue[T]) Remove(val T) {
 	if idx := sf.indexOf(val); idx >= 0 {
-		heap.Remove(sf.data, idx)
+		heap.Remove[T](sf.data, idx)
 	}
 }
 
-func (sf *Queue) indexOf(val interface{}) int {
-	if sf.Len() > 0 && val != nil {
+func (sf *Queue[T]) indexOf(val T) int {
+	if sf.Len() > 0 {
 		for i := 0; i < sf.Len(); i++ {
-			if sf.data.Compare(val, sf.data.Items[i]) == 0 {
+			if val == sf.data.Items[i] {
 				return i
 			}
 		}

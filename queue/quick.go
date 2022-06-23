@@ -1,79 +1,78 @@
 package queue
 
 import (
-	"reflect"
-
 	"github.com/things-go/container"
 )
 
-var _ container.Queue = (*QuickQueue)(nil)
+var _ container.Queue[int] = (*QuickQueue[int])(nil)
+
+type Comparator[T comparable] interface {
+	CompareTo(T) int
+}
 
 // QuickQueue implement with slice.
-type QuickQueue struct {
+type QuickQueue[T comparable] struct {
 	headPos int
-	head    []interface{}
-	tail    []interface{}
-	compare container.Comparator
+	head    []T
+	tail    []T
 }
 
 // NewQuickQueue new quick queue.
-func NewQuickQueue(opts ...Option) *QuickQueue {
-	q := new(QuickQueue)
-	for _, opt := range opts {
-		opt(q)
-	}
-	return q
+func NewQuickQueue[T comparable]() *QuickQueue[T] {
+	return new(QuickQueue[T])
 }
 
-func (sf *QuickQueue) apply(c container.Comparator) { sf.compare = c }
+// func (sf *QuickQueue) apply(c container.Comparator) { sf.compare = c }
 
 // Len returns the length of this queue.
-func (sf *QuickQueue) Len() int { return len(sf.head) - sf.headPos + len(sf.tail) }
+func (sf *QuickQueue[T]) Len() int { return len(sf.head) - sf.headPos + len(sf.tail) }
 
 // IsEmpty returns true if this Queue contains no elements.
-func (sf *QuickQueue) IsEmpty() bool { return sf.Len() == 0 }
+func (sf *QuickQueue[T]) IsEmpty() bool { return sf.Len() == 0 }
 
 // Clear initializes or clears queue.
-func (sf *QuickQueue) Clear() { sf.head, sf.tail, sf.headPos = nil, nil, 0 } // should set nil for gc
+func (sf *QuickQueue[T]) Clear() { sf.head, sf.tail, sf.headPos = nil, nil, 0 } // should set nil for gc
 
 // Add items to the queue.
-func (sf *QuickQueue) Add(v interface{}) { sf.tail = append(sf.tail, v) }
+func (sf *QuickQueue[T]) Add(v T) { sf.tail = append(sf.tail, v) }
 
 // Peek retrieves, but does not remove, the head of this Queue, or return nil if this Queue is empty.
-func (sf *QuickQueue) Peek() interface{} {
+func (sf *QuickQueue[T]) Peek() (v T, ok bool) {
 	if sf.headPos < len(sf.head) {
-		return sf.head[sf.headPos]
+		return sf.head[sf.headPos], true
 	}
 	if len(sf.tail) > 0 {
-		return sf.tail[0]
+		return sf.tail[0], true
 	}
-	return nil
+	return v, false
 }
 
 // Poll retrieves and removes the head of the this Queue, or return nil if this Queue is empty.
-func (sf *QuickQueue) Poll() interface{} {
+func (sf *QuickQueue[T]) Poll() (v T, ok bool) {
+	var placeholder T
+
 	if sf.headPos >= len(sf.head) {
 		if len(sf.tail) == 0 {
-			return nil
+			return v, false
 		}
 		// Pick up tail as new head, clear tail.
 		sf.head, sf.headPos, sf.tail = sf.tail, 0, sf.head[:0]
 	}
-	v := sf.head[sf.headPos]
-	sf.head[sf.headPos] = nil // should set nil for gc
+	v = sf.head[sf.headPos]
+	sf.head[sf.headPos] = placeholder // should set nil for gc
 	sf.headPos++
-	return v
+	return v, true
 }
 
 // Contains returns true if this queue contains the specified element.
-func (sf *QuickQueue) Contains(val interface{}) bool {
+func (sf *QuickQueue[T]) Contains(val T) bool {
 	for i := sf.headPos; i < len(sf.head); i++ {
-		if sf.Compare(sf.head[i], val) {
+		if sf.head[i] == val {
 			return true
 		}
 	}
 	for _, v := range sf.tail {
-		if sf.Compare(v, val) {
+		if v == val {
 			return true
 		}
 	}
@@ -81,12 +80,13 @@ func (sf *QuickQueue) Contains(val interface{}) bool {
 }
 
 // Remove a single instance of the specified element from this queue, if it is present.
-func (sf *QuickQueue) Remove(val interface{}) {
+func (sf *QuickQueue[T]) Remove(val T) {
 	var found bool
 	var idx int
+	var placeholder T
 
 	for i := sf.headPos; i < len(sf.head); i++ {
-		if sf.Compare(sf.head[i], val) {
+		if sf.head[i] == val {
 			idx, found = i, true
 			break
 		}
@@ -94,45 +94,36 @@ func (sf *QuickQueue) Remove(val interface{}) {
 	if found {
 		if (idx - sf.headPos) < (len(sf.head)-sf.headPos)/2 {
 			moveLastToFirst(sf.head[sf.headPos:(idx + 1)])
-			sf.head[sf.headPos] = nil // should set nil for gc
+			sf.head[sf.headPos] = placeholder // should set nil for gc
 			sf.headPos++
 		} else {
 			moveFirstToLast(sf.head[idx:])
-			sf.head[len(sf.head)-1] = nil // should set nil for gc
+			sf.head[len(sf.head)-1] = placeholder // should set nil for gc
 			sf.head = sf.head[:len(sf.head)-1]
 		}
 		return
 	}
 
 	for i, v := range sf.tail {
-		if sf.Compare(v, val) {
+		if v == val {
 			idx, found = i, true
 			break
 		}
 	}
 	if found {
 		moveFirstToLast(sf.tail[idx:])
-		sf.tail[len(sf.tail)-1] = nil // should set nil for gc
+		sf.tail[len(sf.tail)-1] = placeholder // should set nil for gc
 		sf.tail = sf.tail[:len(sf.tail)-1]
 	}
 }
 
-// Compare compare use custom Comparator.
-// if not set, use reflect.DeepEqual
-func (sf *QuickQueue) Compare(v1, v2 interface{}) bool {
-	if sf.compare == nil {
-		return reflect.DeepEqual(v1, v2)
-	}
-	return sf.compare(v1, v2) == 0
-}
-
-func moveLastToFirst(items []interface{}) {
+func moveLastToFirst[T any](items []T) {
 	for i := 0; i < len(items); i++ {
 		items[i], items[len(items)-1] = items[len(items)-1], items[i]
 	}
 }
 
-func moveFirstToLast(items []interface{}) {
+func moveFirstToLast[T any](items []T) {
 	for i := 0; i < len(items); i++ {
 		items[0], items[len(items)-1-i] = items[len(items)-1-i], items[0]
 	}

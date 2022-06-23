@@ -5,7 +5,7 @@ import (
 )
 
 func BenchmarkQueue(b *testing.B) {
-	q := New()
+	q := New[int]()
 	for i := 0; i < b.N; i++ {
 		q.Add(1)
 		q.Poll()
@@ -13,7 +13,7 @@ func BenchmarkQueue(b *testing.B) {
 }
 
 func BenchmarkQuickQueue(b *testing.B) {
-	q := NewQuickQueue()
+	q := NewQuickQueue[int]()
 	for i := 0; i < b.N; i++ {
 		q.Add(1)
 		q.Poll()

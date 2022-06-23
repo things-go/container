@@ -15,49 +15,39 @@
 package linkedmap
 
 import (
-	"container/list"
-	"reflect"
-
 	"github.com/things-go/container"
+	"github.com/things-go/container/core/list"
 )
 
-var _ container.LinkedMap = (*LinkedMap)(nil)
+var _ container.LinkedMap[int, int] = (*LinkedMap[int, int])(nil)
 
-type store struct {
-	key, value interface{}
+type store[K comparable, V any] struct {
+	key   K
+	value V
 }
 
 // LinkedMap implements the Interface.
-type LinkedMap struct {
-	data     map[interface{}]*list.Element
-	ll       *list.List
-	compare  container.Comparator
+type LinkedMap[K comparable, V any] struct {
+	data     map[K]*list.Element[*store[K, V]]
+	ll       *list.List[*store[K, V]]
 	capacity int
 }
 
-// Option option for New.
-type Option func(lm *LinkedMap)
+// Option for New.
+type Option[K comparable, V any] func(lm *LinkedMap[K, V])
 
 // WithCap with limit capacity.
-func WithCap(capacity int) Option {
-	return func(lm *LinkedMap) {
+func WithCap[K comparable, V any](capacity int) Option[K, V] {
+	return func(lm *LinkedMap[K, V]) {
 		lm.capacity = capacity
 	}
 }
 
-// WithComparator with custom Comparator.
-// default reflect.DeepEqual
-func WithComparator(cmp container.Comparator) Option {
-	return func(lm *LinkedMap) {
-		lm.compare = cmp
-	}
-}
-
 // New creates a LinkedMap.
-func New(opts ...Option) *LinkedMap {
-	lm := &LinkedMap{
-		data: make(map[interface{}]*list.Element),
-		ll:   list.New(),
+func New[K comparable, V any](opts ...Option[K, V]) *LinkedMap[K, V] {
+	lm := &LinkedMap[K, V]{
+		data: make(map[K]*list.Element[*store[K, V]]),
+		ll:   list.New[*store[K, V]](),
 	}
 	for _, opt := range opts {
 		opt(lm)
@@ -67,18 +57,18 @@ func New(opts ...Option) *LinkedMap {
 
 // Cap returns the capacity of elements of list ll.
 // The complexity is O(1).
-func (sf *LinkedMap) Cap() int { return sf.capacity }
+func (sf *LinkedMap[K, V]) Cap() int { return sf.capacity }
 
 // Len returns the number of elements of list ll.
 // The complexity is O(1).
-func (sf *LinkedMap) Len() int { return sf.ll.Len() }
+func (sf *LinkedMap[K, V]) Len() int { return sf.ll.Len() }
 
 // IsEmpty returns the list ll is empty or not.
-func (sf *LinkedMap) IsEmpty() bool { return sf.Len() == 0 }
+func (sf *LinkedMap[K, V]) IsEmpty() bool { return sf.Len() == 0 }
 
 // Clear initializes or clears list ll.
-func (sf *LinkedMap) Clear() {
-	sf.data = make(map[interface{}]*list.Element)
+func (sf *LinkedMap[K, V]) Clear() {
+	sf.data = make(map[K]*list.Element[*store[K, V]])
 	sf.ll.Init()
 }
 
@@ -88,7 +78,7 @@ func (sf *LinkedMap) Clear() {
 // If over the capacity, it will remove the back item then push new item to back
 // It returns the previous value associated with the specified key, or nil if there was no mapping for the key.
 // A nil return can also indicate that the map previously associated nil with the specified key.
-func (sf *LinkedMap) Push(k, v interface{}) interface{} { return sf.PushBack(k, v) }
+func (sf *LinkedMap[K, V]) Push(k K, v V) (V, bool) { return sf.PushBack(k, v) }
 
 // PushFront associates the specified value with the specified key in this map.
 // If the map previously contained a mapping for the key,
@@ -96,94 +86,92 @@ func (sf *LinkedMap) Push(k, v interface{}) interface{} { return sf.PushBack(k, 
 // If over the capacity, it will remove the back item then push new item to front
 // It returns the previous value associated with the specified key, or nil if there was no mapping for the key.
 // A nil return can also indicate that the map previously associated nil with the specified key.
-func (sf *LinkedMap) PushFront(k, v interface{}) interface{} {
-	var retVal interface{}
-
+func (sf *LinkedMap[K, V]) PushFront(k K, v V) (val V, exist bool) {
 	if old, ok := sf.data[k]; ok {
-		retVal = old.Value.(*store).value
-		old.Value = &store{k, v}
+		val = old.Value.value
+		old.Value = &store[K, V]{k, v}
 		sf.ll.MoveToFront(old)
+		ok = true
 	} else {
 		if sf.capacity != 0 && sf.ll.Len() >= sf.capacity {
 			e := sf.ll.Back()
-			delete(sf.data, e.Value.(*store).key)
+			delete(sf.data, e.Value.key)
 			sf.ll.Remove(e)
 		}
-		sf.data[k] = sf.ll.PushFront(&store{k, v})
+		sf.data[k] = sf.ll.PushFront(&store[K, V]{k, v})
 	}
-	return retVal
+	return val, exist
 }
 
 // PushBack associates the specified value with the specified key in this map.
 // If the map previously contained a mapping for the key,
 // the old value is replaced by the specified value. and then move the item to the back of the list.
 // If over the capacity, it will remove the back item then push new item to back.
-func (sf *LinkedMap) PushBack(k, v interface{}) interface{} {
-	var retVal interface{}
-
+func (sf *LinkedMap[K, V]) PushBack(k K, v V) (val V, exist bool) {
 	if old, ok := sf.data[k]; ok {
-		retVal = old.Value.(*store).value
-		old.Value = &store{k, v}
+		val = old.Value.value
+		old.Value = &store[K, V]{k, v}
 		sf.ll.MoveToBack(old)
+		exist = true
 	} else {
 		if sf.capacity != 0 && sf.ll.Len() >= sf.capacity {
 			e := sf.ll.Front()
-			delete(sf.data, e.Value.(*store).key)
+			delete(sf.data, e.Value.key)
 			sf.ll.Remove(e)
 		}
-		sf.data[k] = sf.ll.PushBack(&store{k, v})
+		sf.data[k] = sf.ll.PushBack(&store[K, V]{k, v})
 	}
-	return retVal
+	return val, exist
 }
 
 // Poll return the front element value and then remove from list.
-func (sf *LinkedMap) Poll() (k, v interface{}, exist bool) { return sf.PollFront() }
+func (sf *LinkedMap[K, V]) Poll() (k K, v V, exist bool) { return sf.PollFront() }
 
 // PollFront return the front element value and then remove from list.
-func (sf *LinkedMap) PollFront() (k, v interface{}, exist bool) {
+func (sf *LinkedMap[K, V]) PollFront() (k K, v V, exist bool) {
 	if e := sf.ll.Front(); e != nil {
-		st := e.Value.(*store)
+		st := e.Value
 		delete(sf.data, st.key)
 		sf.ll.Remove(e)
 		return st.key, st.value, true
 	}
-	return nil, nil, false
+	return k, v, false
 }
 
 // PollBack return the back element value and then remove from list.
-func (sf *LinkedMap) PollBack() (k, v interface{}, exist bool) {
+func (sf *LinkedMap[K, V]) PollBack() (k K, v V, exist bool) {
 	if e := sf.ll.Back(); e != nil {
-		st := e.Value.(*store)
+		st := e.Value
 		delete(sf.data, st.key)
 		sf.ll.Remove(e)
 		return st.key, st.value, true
 	}
-	return nil, nil, false
+	return k, v, false
 }
 
 // Remove removes the mapping for a key from this map if it is present.
 // It returns the value to which this map previously associated the key, and true,
 // or nil and false if the map contained no mapping for the key.
-func (sf *LinkedMap) Remove(k interface{}) (interface{}, bool) {
+func (sf *LinkedMap[K, V]) Remove(k K) (val V, exist bool) {
 	if oldElement, ok := sf.data[k]; ok {
-		retVal := oldElement.Value.(*store).value
+		val = oldElement.Value.value
 		delete(sf.data, k)
 		sf.ll.Remove(oldElement)
-		return retVal, true
+		exist = true
 	}
-	return nil, false
+	return val, exist
 }
 
 // Contains returns true if this map contains a mapping for the specified key.
-func (sf *LinkedMap) Contains(k interface{}) bool {
+func (sf *LinkedMap[K, V]) Contains(k K) bool {
 	_, ok := sf.data[k]
 	return ok
 }
 
 // ContainsValue returns true if this map maps one or more keys to the specified value.
-func (sf *LinkedMap) ContainsValue(v interface{}) bool {
+func (sf *LinkedMap[K, V]) ContainsValue(v V, equal func(a, b V) bool) bool {
 	for e := sf.ll.Front(); e != nil; e = e.Next() {
-		if sf.Compare(e.Value.(*store).value, v) {
+		if equal(e.Value.value, v) {
 			return true
 		}
 	}
@@ -191,44 +179,46 @@ func (sf *LinkedMap) ContainsValue(v interface{}) bool {
 }
 
 // Get returns the value to which the specified key is mapped, or nil if this map contains no mapping for the key.
-func (sf *LinkedMap) Get(k interface{}, defaultValue ...interface{}) interface{} {
+func (sf *LinkedMap[K, V]) Get(k K, defaultValue ...V) (val V) {
 	if old, ok := sf.data[k]; ok {
 		sf.ll.MoveToBack(old)
-		return old.Value.(*store).value
+		return old.Value.value
 	}
 	if len(defaultValue) > 0 {
 		return defaultValue[0]
 	}
-	return nil
+	return val
 }
 
 // Peek return the front element value .
-func (sf *LinkedMap) Peek() (k, v interface{}, exist bool) {
+func (sf *LinkedMap[K, V]) Peek() (k K, v V, exist bool) {
 	return sf.PeekFront()
 }
 
 // PeekFront return the front element value.
-func (sf *LinkedMap) PeekFront() (k, v interface{}, exist bool) {
+func (sf *LinkedMap[K, V]) PeekFront() (k K, v V, exist bool) {
 	if e := sf.ll.Front(); e != nil {
-		st := e.Value.(*store)
-		return st.key, st.value, true
+		k = e.Value.key
+		v = e.Value.value
+		exist = true
 	}
-	return nil, nil, false
+	return k, v, exist
 }
 
 // PeekBack return the back element value .
-func (sf *LinkedMap) PeekBack() (k, v interface{}, exist bool) {
+func (sf *LinkedMap[K, V]) PeekBack() (k K, v V, exist bool) {
 	if e := sf.ll.Back(); e != nil {
-		st := e.Value.(*store)
-		return st.key, st.value, true
+		k = e.Value.key
+		v = e.Value.value
+		exist = true
 	}
-	return nil, nil, false
+	return k, v, exist
 }
 
-// Iterator iterator the list.
-func (sf *LinkedMap) Iterator(cb func(k, v interface{}) bool) {
+// Iterator the list.
+func (sf *LinkedMap[K, V]) Iterator(cb func(k K, v V) bool) {
 	for e := sf.ll.Front(); e != nil; e = e.Next() {
-		st := e.Value.(*store)
+		st := e.Value
 		if cb == nil || !cb(st.key, st.value) {
 			return
 		}
@@ -236,20 +226,11 @@ func (sf *LinkedMap) Iterator(cb func(k, v interface{}) bool) {
 }
 
 // ReverseIterator reverse iterator the list.
-func (sf *LinkedMap) ReverseIterator(cb func(k, v interface{}) bool) {
+func (sf *LinkedMap[K, V]) ReverseIterator(cb func(k K, v V) bool) {
 	for e := sf.ll.Back(); e != nil; e = e.Prev() {
-		st := e.Value.(*store)
+		st := e.Value
 		if cb == nil || !cb(st.key, st.value) {
 			return
 		}
 	}
-}
-
-// Compare compare use custom Comparator.
-// if not set, use reflect.DeepEqual
-func (sf *LinkedMap) Compare(v1, v2 interface{}) bool {
-	if sf.compare != nil {
-		return sf.compare(v1, v2) == 0
-	}
-	return reflect.DeepEqual(v1, v2)
 }
