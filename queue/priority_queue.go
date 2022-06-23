@@ -36,8 +36,8 @@ type Option[T constraints.Ordered] func(q *PriorityQueue[T])
 func NewPriorityQueue[T constraints.Ordered](maxHeap bool, items ...T) *PriorityQueue[T] {
 	q := &PriorityQueue[T]{
 		data: &container.Container[T]{
-			items,
-			maxHeap,
+			Items:   items,
+			Reverse: maxHeap,
 		},
 	}
 	heap.Init[T](q.data)

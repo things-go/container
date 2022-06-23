@@ -53,5 +53,4 @@ func TestQuickStack(t *testing.T) {
 	s.Clear()
 	assert.True(t, s.IsEmpty())
 	assert.Zero(t, s.Len())
-
 }

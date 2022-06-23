@@ -91,7 +91,7 @@ func (sf *LinkedMap[K, V]) PushFront(k K, v V) (val V, exist bool) {
 		val = old.Value.value
 		old.Value = &store[K, V]{k, v}
 		sf.ll.MoveToFront(old)
-		ok = true
+		exist = true
 	} else {
 		if sf.capacity != 0 && sf.ll.Len() >= sf.capacity {
 			e := sf.ll.Back()
