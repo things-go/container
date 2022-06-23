@@ -14,4 +14,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          args: -E goimports,misspell
+          args: -D gocritic -E goimports,misspell
+          version: latest
+          working-directory: .
+          skip-pkg-cache: true
