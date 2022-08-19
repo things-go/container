@@ -61,7 +61,7 @@ func (sf *List[T]) PushBack(v T) { sf.items = append(sf.items, v) }
 // Add inserts the specified element at the specified position in this list.
 func (sf *List[T]) Add(index int, val T) error {
 	if index < 0 || index > len(sf.items) {
-		return fmt.Errorf("index out of range, index:%d, len:%d", index, sf.Len())
+		return fmt.Errorf("index out of range, index: %d, len: %d", index, sf.Len())
 	}
 
 	if index == sf.Len() {
@@ -128,12 +128,11 @@ func (sf *List[T]) Remove(index int) (val T, err error) {
 	var placeholder T
 
 	if index < 0 || index >= len(sf.items) {
-		return val, fmt.Errorf("index out of range, index:%d, len:%d", index, sf.Len())
+		return val, fmt.Errorf("index out of range, index: %d, len: %d", index, sf.Len())
 	}
 
 	val = sf.items[index]
-	// sf.items = append(sf.items[:index], sf.items[(index+1):]...)
-	moveLastToFirst(sf.items[index:])
+	moveFirstToLast(sf.items[index:])
 	sf.items[len(sf.items)-1] = placeholder
 	sf.items = sf.items[:len(sf.items)-1]
 	sf.shrinkList()
@@ -150,8 +149,7 @@ func (sf *List[T]) RemoveValue(val T) bool {
 	}
 
 	if idx := sf.indexOf(val); idx >= 0 {
-		// sf.items = append(sf.items[:idx], sf.items[(idx+1):]...)
-		moveLastToFirst(sf.items[idx:])
+		moveFirstToLast(sf.items[idx:])
 		sf.items[len(sf.items)-1] = placeholder
 		sf.items = sf.items[:len(sf.items)-1]
 		sf.shrinkList()
@@ -215,17 +213,12 @@ func (sf *List[T]) Contains(val T) bool {
 
 // Sort the list.
 func (sf *List[T]) Sort(less func(a, b T) bool) {
-	if sf.Len() <= 1 {
-		return
-	}
 	slices.SortFunc(sf.items, less)
 }
 
 // Values get a copy of all the values in the list.
 func (sf *List[T]) Values() []T {
-	items := make([]T, 0, len(sf.items))
-	items = append(items, sf.items...)
-	return items
+	return slices.Clone(sf.items)
 }
 
 func (sf *List[T]) shrinkList() {
@@ -249,14 +242,18 @@ func (sf *List[T]) indexOf(val T) int {
 	return -1
 }
 
+// move the last element to the first position.
+// for example: [1,2,3,4] -> [4,1,2,3]
 func moveLastToFirst[T any](items []T) {
-	for i := 0; i < len(items); i++ {
+	for i := 0; i < len(items)-1; i++ {
 		items[i], items[len(items)-1] = items[len(items)-1], items[i]
 	}
 }
 
+// move the first element to the last position.
+// for example: [1,2,3,4] -> [2,3,4,1]
 func moveFirstToLast[T any](items []T) {
-	for i := 0; i < len(items); i++ {
+	for i := 0; i < len(items)-1; i++ {
 		items[0], items[len(items)-1-i] = items[len(items)-1-i], items[0]
 	}
 }

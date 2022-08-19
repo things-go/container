@@ -5,14 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/slices"
 )
-
-func checkList[T comparable](t *testing.T, l *List[T], es []T) {
-	require.Equal(t, len(es), l.Len())
-	for i := 0; i < l.Len(); i++ {
-		assert.Equal(t, es[i], l.items[i])
-	}
-}
 
 func TestArrayListLen(t *testing.T) {
 	l := New[int]()
@@ -28,6 +22,7 @@ func TestArrayListLen(t *testing.T) {
 	assert.Equal(t, 6, v)
 	assert.Equal(t, 2, l.Len())
 	assert.False(t, l.IsEmpty())
+	assert.False(t, l.Contains(6))
 
 	v, err = l.Remove(100)
 	assert.NotNil(t, err)
@@ -35,7 +30,6 @@ func TestArrayListLen(t *testing.T) {
 
 	// clear l the elements
 	l.Clear()
-	assert.Equal(t, 0, l.Len())
 	assert.True(t, l.IsEmpty())
 }
 
@@ -45,6 +39,8 @@ func TestArrayListValue(t *testing.T) {
 	l.PushBack(7)
 	l.PushFront(6)
 
+	require.True(t, slices.Equal(l.Values(), []int{6, 5, 7}))
+	// peek
 	val, ok := l.Peek()
 	assert.True(t, ok)
 	assert.Equal(t, 6, val)
@@ -60,6 +56,8 @@ func TestArrayListValue(t *testing.T) {
 	err := l.Add(2, 8)
 	assert.Nil(t, err)
 
+	require.True(t, slices.Equal(l.Values(), []int{6, 5, 8, 7}))
+
 	v, err := l.Get(2)
 	assert.Nil(t, err)
 	assert.Equal(t, 8, v)
@@ -73,9 +71,11 @@ func TestArrayListValue(t *testing.T) {
 	assert.False(t, l.RemoveValue(9))
 
 	// check element 8
-	assert.False(t, l.Contains(9))
+	assert.True(t, l.Contains(8))
 	assert.True(t, l.RemoveValue(8))
-	assert.False(t, l.Contains(9))
+	assert.False(t, l.Contains(8))
+
+	require.True(t, slices.Equal(l.Values(), []int{6, 5, 7}))
 
 	// get out of range
 	v, err = l.Get(l.Len())
@@ -100,6 +100,8 @@ func TestArrayListValue(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, 5, val)
 
+	require.True(t, l.IsEmpty())
+
 	val, ok = l.PollFront()
 	assert.False(t, ok)
 	assert.Empty(t, val)
@@ -123,11 +125,13 @@ func TestArrayListValue(t *testing.T) {
 	err = l.Add(0, 1)
 	assert.Nil(t, err)
 
+	require.True(t, slices.Equal(l.Values(), []int{1}))
+
 	// invalid index
 	err = l.Add(-1, 1)
 	assert.NotNil(t, err)
 	err = l.Add(l.Len()+1, 1)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestArrayListIterator(t *testing.T) {
@@ -189,7 +193,6 @@ func TestArrayListSort(t *testing.T) {
 	}
 }
 
-// fmt.Printf("%#v\r\n", l.items).
 func TestExtending(t *testing.T) {
 	l1 := New[int]()
 	l2 := New[int]()
@@ -203,34 +206,34 @@ func TestExtending(t *testing.T) {
 
 	l3 := New[int]()
 	l3.PushBackList(l1)
-	checkList(t, l3, []int{1, 2, 3})
+	require.True(t, slices.Equal(l3.Values(), []int{1, 2, 3}))
 	l3.PushBackList(l2)
-	checkList(t, l3, []int{1, 2, 3, 4, 5})
+	require.True(t, slices.Equal(l3.Values(), []int{1, 2, 3, 4, 5}))
 
 	l3 = New[int]()
 	l3.PushFrontList(l2)
-	checkList(t, l3, []int{4, 5})
+	require.True(t, slices.Equal(l3.Values(), []int{4, 5}))
 	l3.PushFrontList(l1)
-	checkList(t, l3, []int{1, 2, 3, 4, 5})
+	require.True(t, slices.Equal(l3.Values(), []int{1, 2, 3, 4, 5}))
 
-	checkList(t, l1, []int{1, 2, 3})
-	checkList(t, l2, []int{4, 5})
+	require.True(t, slices.Equal(l1.Values(), []int{1, 2, 3}))
+	require.True(t, slices.Equal(l2.Values(), []int{4, 5}))
 
 	l3 = New[int]()
 	l3.PushBackList(l1)
-	checkList(t, l3, []int{1, 2, 3})
+	require.True(t, slices.Equal(l3.Values(), []int{1, 2, 3}))
 	l3.PushBackList(l3)
-	checkList(t, l3, []int{1, 2, 3, 1, 2, 3})
+	require.True(t, slices.Equal(l3.Values(), []int{1, 2, 3, 1, 2, 3}))
 
 	l3 = New[int]()
 	l3.PushFrontList(l1)
-	checkList(t, l3, []int{1, 2, 3})
+	require.True(t, slices.Equal(l3.Values(), []int{1, 2, 3}))
 	l3.PushFrontList(l3)
-	checkList(t, l3, []int{1, 2, 3, 1, 2, 3})
+	require.True(t, slices.Equal(l3.Values(), []int{1, 2, 3, 1, 2, 3}))
 
 	l3 = New[int]()
 	l1.PushBackList(l3)
-	checkList(t, l1, []int{1, 2, 3})
+	require.True(t, slices.Equal(l1.Values(), []int{1, 2, 3}))
 	l1.PushFrontList(l3)
-	checkList(t, l1, []int{1, 2, 3})
+	require.True(t, slices.Equal(l1.Values(), []int{1, 2, 3}))
 }
