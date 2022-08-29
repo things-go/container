@@ -2,13 +2,13 @@
 package heap
 
 import (
-	"container/heap"
 	"errors"
 	"fmt"
 	"sync"
 
 	"github.com/things-go/container"
 	"github.com/things-go/container/comparator"
+	"github.com/things-go/container/core/heap"
 )
 
 // ErrHeapClosed used when heap is closed.
@@ -19,17 +19,17 @@ type itemKeyValue struct {
 	obj interface{}
 }
 
-type heapItem struct {
-	index int         // The index of the object's key in the Heap.queue.
-	obj   interface{} // The object which is stored in the heap.
+type heapItem[T any] struct {
+	index int // The index of the object's key in the Heap.queue.
+	obj   T   // The object which is stored in the heap.
 }
 
 // heapData is an internal struct that implements the standard heap interface
 // and keeps the data stored in the heap.
-type heapData struct {
+type heapData[T any] struct {
 	// items is a map from key of the objects to the objects and their index.
 	// We depend on the property that items in the map are in the queue and vice versa.
-	items map[string]*heapItem
+	items map[string]*heapItem[T]
 	// queue implements a heap data structure and keeps the order of elements
 	// according to the heap invariant. The queue keeps the keys of objects stored
 	// in "items".
@@ -39,11 +39,11 @@ type heapData struct {
 	compare container.Comparator
 }
 
-var _ heap.Interface = (*heapData)(nil) // heapData is a standard heap
+var _ heap.Interface[itemKeyValue] = (*heapData[itemKeyValue])(nil) // heapData is a standard heap
 
 // Less compares two objects and returns true if the first one should go
 // in front of the second one in the heap.
-func (h *heapData) Less(i, j int) bool {
+func (h *heapData[T]) Less(i, j int) bool {
 	if i > len(h.queue) || j > len(h.queue) {
 		return false
 	}
@@ -59,11 +59,11 @@ func (h *heapData) Less(i, j int) bool {
 }
 
 // Len returns the number of items in the Heap.
-func (h *heapData) Len() int { return len(h.queue) }
+func (h *heapData[T]) Len() int { return len(h.queue) }
 
 // Swap implements swapping of two elements in the heap. This is a part of standard
 // heap interface and should never be called directly.
-func (h *heapData) Swap(i, j int) {
+func (h *heapData[T]) Swap(i, j int) {
 	h.queue[i], h.queue[j] = h.queue[j], h.queue[i]
 	item := h.items[h.queue[i]]
 	item.index = i
@@ -72,15 +72,14 @@ func (h *heapData) Swap(i, j int) {
 }
 
 // Push is supposed to be called by heap.Push only.
-func (h *heapData) Push(kv interface{}) {
-	keyValue := kv.(*itemKeyValue)
+func (h *heapData[T]) Push(kv itemKeyValue) {
 	n := len(h.queue)
-	h.items[keyValue.key] = &heapItem{n, keyValue.obj}
-	h.queue = append(h.queue, keyValue.key)
+	h.items[kv.key] = &heapItem[T]{n, kv.obj}
+	h.queue = append(h.queue, kv.key)
 }
 
 // Pop is supposed to be called by heap.Pop only.
-func (h *heapData) Pop() interface{} {
+func (h *heapData[T]) Pop() interface{} {
 	key := h.queue[len(h.queue)-1]
 	h.queue = h.queue[:len(h.queue)-1]
 	item, ok := h.items[key]
@@ -92,7 +91,7 @@ func (h *heapData) Pop() interface{} {
 	return item.obj
 }
 
-func (h *heapData) Compare(v1, v2 interface{}) int {
+func (h *heapData[T]) Compare(v1, v2 interface{}) int {
 	if h.compare == nil {
 		return comparator.Compare(v1, v2)
 	}
@@ -100,19 +99,19 @@ func (h *heapData) Compare(v1, v2 interface{}) int {
 }
 
 // Contain return the requested item exist or not with key
-func (h *heapData) Contain(key string) bool {
+func (h *heapData[T]) Contain(key string) bool {
 	_, exist := h.items[key]
 	return exist
 }
 
 // GetItem return the requested item with key
-func (h *heapData) GetItem(key string) (*heapItem, bool) {
+func (h *heapData[T]) GetItem(key string) (*heapItem[T], bool) {
 	v, exist := h.items[key]
 	return v, exist
 }
 
 // ListKeys returns a list of all the keys of the objects currently in the heapData.
-func (h *heapData) ListKeys() []string {
+func (h *heapData[T]) ListKeys() []string {
 	list := make([]string, 0, len(h.items))
 	for key := range h.items {
 		list = append(list, key)
@@ -121,7 +120,7 @@ func (h *heapData) ListKeys() []string {
 }
 
 // List returns a list of all the items obj.
-func (h *heapData) List() []interface{} {
+func (h *heapData[T]) List() []interface{} {
 	list := make([]interface{}, 0, len(h.items))
 	for _, item := range h.items {
 		list = append(list, item.obj)

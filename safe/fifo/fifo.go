@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/things-go/sets"
+	"golang.org/x/exp/maps"
 
 	"github.com/things-go/container"
 )
@@ -14,7 +15,7 @@ var ErrFIFOClosed = errors.New("fifo: manipulating with closed queue")
 
 // PopProcessFunc is passed to Pop() method of Queue interface.
 // It is supposed to process the accumulator popped from the queue.
-type PopProcessFunc func(interface{}) error
+type PopProcessFunc[T any] func(T) error
 
 // ErrRequeue may be returned by a PopProcessFunc to safely requeue
 // the current item. The value of Err will be returned from Pop.
@@ -36,8 +37,8 @@ func (e ErrRequeue) Error() string {
 // A Queue has a way to derive the corresponding key given an accumulator.
 // A Queue can be accessed concurrently from multiple goroutines.
 // A Queue can be "closed", after which Pop operations return an error.
-type Queue interface {
-	container.Store
+type Queue[T any] interface {
+	container.Store[T]
 
 	// Pop blocks until there is at least one key to process or the
 	// Queue is closed.  In the latter case Pop returns with an error.
@@ -49,12 +50,12 @@ type Queue interface {
 	// return that (key, accumulator) association to the Queue as part
 	// of the atomic processing and (b) return the inner error from
 	// Pop.
-	Pop(PopProcessFunc) (interface{}, error)
+	Pop(PopProcessFunc[T]) (T, error)
 
 	// AddIfNotPresent puts the given accumulator into the Queue (in
 	// association with the accumulator's key) if and only if that key
 	// is not already associated with a non-empty accumulator.
-	AddIfNotPresent(interface{}) error
+	AddIfNotPresent(T) error
 
 	// HasSynced returns true if the first batch of keys have all been
 	// popped.  The first batch of keys are those of the first Replace
@@ -69,9 +70,9 @@ type Queue interface {
 // Pop is helper function for popping from Queue.
 // WARNING: Do NOT use this function in non-test code to avoid races
 // unless you really really really really know what you are doing.
-func Pop(queue Queue) interface{} {
-	var result interface{}
-	queue.Pop(func(obj interface{}) error { // nolint: errcheck
+func Pop[T any](queue Queue[T]) T {
+	var result T
+	queue.Pop(func(obj T) error { // nolint: errcheck
 		result = obj
 		return nil
 	})
@@ -79,7 +80,7 @@ func Pop(queue Queue) interface{} {
 }
 
 // FIFO is a Queue
-var _ Queue = (*FIFO)(nil)
+var _ Queue[int] = (*FIFO[int])(nil)
 
 // FIFO is a Queue in which (a) each accumulator is simply the most
 // recently provided object and (b) the collection of keys to process
@@ -93,16 +94,17 @@ var _ Queue = (*FIFO)(nil)
 // recent version will be processed. This can't be done with a channel
 //
 // FIFO solves this use case:
-//  * You want to process every object (exactly) once.
-//  * You want to process the most recent version of the object when you process it.
-//  * You do not want to process deleted objects, they should be removed from the queue.
-//  * You do not want to periodically reprocess objects.
+//   - You want to process every object (exactly) once.
+//   - You want to process the most recent version of the object when you process it.
+//   - You do not want to process deleted objects, they should be removed from the queue.
+//   - You do not want to periodically reprocess objects.
+//
 // Compare with DeltaFIFO for other use cases.
-type FIFO struct {
+type FIFO[T any] struct {
 	rw   sync.RWMutex
 	cond sync.Cond
 	// We depend on the property that every key in `items` is also in `queue`
-	items map[string]interface{}
+	items map[string]T
 	queue []string
 
 	// populated is true if the first batch of items inserted by Replace() has been populated
@@ -113,7 +115,7 @@ type FIFO struct {
 
 	// keyFunc is used to make the key used for queued item insertion and retrieval, and
 	// should be deterministic.
-	keyFunc container.KeyFunc
+	keyFunc container.KeyFunc[T]
 
 	// Indication the queue is closed.
 	// Used to indicate a queue is closed so a control loop can exit when a queue is empty.
@@ -123,9 +125,9 @@ type FIFO struct {
 
 // New returns a Store which can be used to queue up items to process.
 // keyFunc is used to make the key used for queued item insertion and retrieval, and should be deterministic.
-func New(keyFunc container.KeyFunc) *FIFO {
-	f := &FIFO{
-		items:   map[string]interface{}{},
+func New[T any](keyFunc container.KeyFunc[T]) *FIFO[T] {
+	f := &FIFO[T]{
+		items:   map[string]T{},
 		queue:   []string{},
 		keyFunc: keyFunc,
 	}
@@ -134,7 +136,7 @@ func New(keyFunc container.KeyFunc) *FIFO {
 }
 
 // Close the queue.
-func (sf *FIFO) Close() {
+func (sf *FIFO[T]) Close() {
 	sf.rw.Lock()
 	defer sf.rw.Unlock()
 	sf.closed = true
@@ -143,7 +145,7 @@ func (sf *FIFO) Close() {
 
 // HasSynced returns true if an Push/Update/Delete/AddIfNotPresent are called first,
 // or the first batch of items inserted by Replace() has been popped.
-func (sf *FIFO) HasSynced() bool {
+func (sf *FIFO[T]) HasSynced() bool {
 	sf.rw.Lock()
 	defer sf.rw.Unlock()
 	return sf.populated && sf.initialPopulationCount == 0
@@ -151,10 +153,10 @@ func (sf *FIFO) HasSynced() bool {
 
 // Add inserts an item, and puts it in the queue.
 // The item is only enqueued if it doesn't already exist in the set.
-func (sf *FIFO) Add(obj interface{}) error {
+func (sf *FIFO[T]) Add(obj T) error {
 	key, err := sf.keyFunc(obj)
 	if err != nil {
-		return container.KeyError{Obj: obj, Err: err}
+		return container.KeyError[T]{Obj: obj, Err: err}
 	}
 	sf.rw.Lock()
 	defer sf.rw.Unlock()
@@ -173,10 +175,10 @@ func (sf *FIFO) Add(obj interface{}) error {
 // This is useful in a single producer/consumer scenario so that the consumer can
 // safely retry items without contending with the producer and potentially enqueueing
 // stale items.
-func (sf *FIFO) AddIfNotPresent(obj interface{}) error {
+func (sf *FIFO[T]) AddIfNotPresent(obj T) error {
 	key, err := sf.keyFunc(obj)
 	if err != nil {
-		return container.KeyError{Obj: obj, Err: err}
+		return container.KeyError[T]{Obj: obj, Err: err}
 	}
 	sf.rw.Lock()
 	defer sf.rw.Unlock()
@@ -186,7 +188,7 @@ func (sf *FIFO) AddIfNotPresent(obj interface{}) error {
 
 // addIfNotPresent assumes the fifo lock is already held and adds the provided
 // item to the queue under id if it does not already exist.
-func (sf *FIFO) addIfNotPresent(key string, obj interface{}) {
+func (sf *FIFO[T]) addIfNotPresent(key string, obj T) {
 	sf.populated = true
 	if _, exists := sf.items[key]; exists {
 		return
@@ -198,17 +200,17 @@ func (sf *FIFO) addIfNotPresent(key string, obj interface{}) {
 }
 
 // Update is the same as Add in this implementation.
-func (sf *FIFO) Update(obj interface{}) error {
+func (sf *FIFO[T]) Update(obj T) error {
 	return sf.Add(obj)
 }
 
 // Delete removes an item. It doesn't add it to the queue, because
 // this implementation assumes the consumer only cares about the objects,
 // not the order in which they were created/added.
-func (sf *FIFO) Delete(obj interface{}) error {
+func (sf *FIFO[T]) Delete(obj T) error {
 	id, err := sf.keyFunc(obj)
 	if err != nil {
-		return container.KeyError{Obj: obj, Err: err}
+		return container.KeyError[T]{Obj: obj, Err: err}
 	}
 	sf.rw.Lock()
 	defer sf.rw.Unlock()
@@ -218,39 +220,31 @@ func (sf *FIFO) Delete(obj interface{}) error {
 }
 
 // List returns a list of all the items.
-func (sf *FIFO) List() []interface{} {
+func (sf *FIFO[T]) List() []T {
 	sf.rw.RLock()
 	defer sf.rw.RUnlock()
-	list := make([]interface{}, 0, len(sf.items))
-	for _, item := range sf.items {
-		list = append(list, item)
-	}
-	return list
+	return maps.Values(sf.items)
 }
 
 // ListKeys returns a list of all the keys of the objects currently
 // in the FIFO.
-func (sf *FIFO) ListKeys() []string {
+func (sf *FIFO[T]) ListKeys() []string {
 	sf.rw.RLock()
 	defer sf.rw.RUnlock()
-	list := make([]string, 0, len(sf.items))
-	for key := range sf.items {
-		list = append(list, key)
-	}
-	return list
+	return maps.Keys(sf.items)
 }
 
 // Get returns the requested item, or sets exists=false.
-func (sf *FIFO) Get(obj interface{}) (item interface{}, exists bool, err error) {
+func (sf *FIFO[T]) Get(obj T) (item T, exists bool, err error) {
 	key, err := sf.keyFunc(obj)
 	if err != nil {
-		return nil, false, container.KeyError{Obj: obj, Err: err}
+		return item, false, container.KeyError[T]{Obj: obj, Err: err}
 	}
 	return sf.GetByKey(key)
 }
 
 // GetByKey returns the requested item, or sets exists=false.
-func (sf *FIFO) GetByKey(key string) (item interface{}, exists bool, err error) {
+func (sf *FIFO[T]) GetByKey(key string) (item T, exists bool, err error) {
 	sf.rw.RLock()
 	defer sf.rw.RUnlock()
 	item, exists = sf.items[key]
@@ -258,7 +252,7 @@ func (sf *FIFO) GetByKey(key string) (item interface{}, exists bool, err error) 
 }
 
 // IsClosed checks if the queue is closed.
-func (sf *FIFO) IsClosed() bool {
+func (sf *FIFO[T]) IsClosed() bool {
 	sf.rw.RLock()
 	defer sf.rw.RUnlock()
 	return sf.closed
@@ -270,7 +264,9 @@ func (sf *FIFO) IsClosed() bool {
 // so if you don't successfully process it, it should be added back with
 // AddIfNotPresent(). process function is called under lock, so it is safe
 // update data structures in it that need to be in sync with the queue.
-func (sf *FIFO) Pop(process PopProcessFunc) (interface{}, error) {
+func (sf *FIFO[T]) Pop(process PopProcessFunc[T]) (T, error) {
+	var placeholder T
+
 	sf.rw.Lock()
 	defer sf.rw.Unlock()
 	for {
@@ -279,7 +275,7 @@ func (sf *FIFO) Pop(process PopProcessFunc) (interface{}, error) {
 			// When Close() is called, the sf.closed is set and the condition is broadcasted.
 			// Which causes this loop to continue and return from the Pop().
 			if sf.closed {
-				return nil, ErrFIFOClosed
+				return placeholder, ErrFIFOClosed
 			}
 
 			sf.cond.Wait()
@@ -311,12 +307,12 @@ func (sf *FIFO) Pop(process PopProcessFunc) (interface{}, error) {
 // 'f' takes ownership of the map, you should not reference the map again
 // after calling this function. f's queue is reset, too; upon return, it
 // will contain the items in the map, in no particular order.
-func (sf *FIFO) Replace(list []interface{}, _ string) error {
-	items := make(map[string]interface{}, len(list))
+func (sf *FIFO[T]) Replace(list []T, _ string) error {
+	items := make(map[string]T, len(list))
 	for _, item := range list {
 		key, err := sf.keyFunc(item)
 		if err != nil {
-			return container.KeyError{Obj: item, Err: err}
+			return container.KeyError[T]{Obj: item, Err: err}
 		}
 		items[key] = item
 	}
@@ -342,7 +338,7 @@ func (sf *FIFO) Replace(list []interface{}, _ string) error {
 
 // Resync will ensure that every object in the Store has its key in the queue.
 // This should be a no-op, because that property is maintained by all operations.
-func (sf *FIFO) Resync() error {
+func (sf *FIFO[T]) Resync() error {
 	sf.rw.Lock()
 	defer sf.rw.Unlock()
 
