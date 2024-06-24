@@ -1,11 +1,11 @@
 module github.com/things-go/container
 
-go 1.18
+go 1.22
 
 require (
-	github.com/stretchr/testify v1.8.3
-	github.com/things-go/sets v1.0.0
-	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
+	github.com/stretchr/testify v1.9.0
+	github.com/things-go/sets v1.2.1
+	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8
 )
 
 require (

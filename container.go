@@ -1,14 +1,10 @@
 package container
 
-import (
-	"golang.org/x/exp/constraints"
+import "container/heap"
 
-	"github.com/things-go/container/core/heap"
-)
+var _ heap.Interface = (*Container[Int])(nil)
 
-var _ heap.Interface[int] = (*Container[int])(nil)
-
-type Container[T constraints.Ordered] struct {
+type Container[T Comparable] struct {
 	Items   []T
 	Reverse bool
 }
@@ -28,22 +24,22 @@ func (c Container[T]) Less(i, j int) bool {
 	if c.Reverse {
 		i, j = j, i
 	}
-	return c.Items[i] < c.Items[j]
+	return c.Items[i].CompareTo(c.Items[j]) < 0
 }
 
 // Push implement heap.Interface.
-func (c *Container[T]) Push(x T) {
-	c.Items = append(c.Items, x)
+func (c *Container[T]) Push(x any) {
+	c.Items = append(c.Items, x.(T))
 }
 
 // Pop implement heap.Interface.
-func (c *Container[T]) Pop() T {
-	var placeholder T
+func (c *Container[T]) Pop() any {
+	var zero T
 
 	old := c.Items
 	n := len(old)
 	x := old[n-1]
-	old[n-1] = placeholder
+	old[n-1] = zero
 	c.Items = old[:n-1]
 	return x
 }

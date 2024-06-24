@@ -19,12 +19,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/constraints"
+	"github.com/things-go/container"
 )
 
 func TestPriorityQueueLen(t *testing.T) {
 	// init 3 elements
-	q := NewPriorityQueue[int](false, 5, 6, 7)
+	q := NewPriorityQueue[container.Int](false, 5, 6, 7)
 
 	require.Equal(t, 3, q.Len())
 	require.False(t, q.IsEmpty())
@@ -49,7 +49,7 @@ func TestPriorityQueueLen(t *testing.T) {
 
 func TestPriorityQueueValue(t *testing.T) {
 	// create priority queue
-	q := NewPriorityQueue[int](false)
+	q := NewPriorityQueue[container.Int](false)
 	q.Add(15)
 	q.Add(19)
 	q.Add(12)
@@ -90,16 +90,16 @@ func TestPriorityQueueValue(t *testing.T) {
 }
 
 func TestPriorityQueueMinHeap(t *testing.T) {
-	pq := NewPriorityQueue[int](false)
-	pqTestPriorityQueueSortImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{8, 12, 13, 15, 19})
+	pq := NewPriorityQueue[container.Int](false)
+	pqTestPriorityQueueSortImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{8, 12, 13, 15, 19})
 }
 
 func TestPriorityQueueMaxHeap(t *testing.T) {
-	pq := NewPriorityQueue[int](true)
-	pqTestPriorityQueueSortImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{19, 15, 13, 12, 8})
+	pq := NewPriorityQueue[container.Int](true)
+	pqTestPriorityQueueSortImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{19, 15, 13, 12, 8})
 }
 
-func pqTestPriorityQueueSortImpl[T constraints.Ordered](t *testing.T, q *PriorityQueue[T], input, expected []T) {
+func pqTestPriorityQueueSortImpl[T container.Comparable](t *testing.T, q *PriorityQueue[T], input, expected []T) {
 	for i := 0; i < len(input); i++ {
 		q.Add(input[i])
 	}
@@ -114,21 +114,21 @@ func pqTestPriorityQueueSortImpl[T constraints.Ordered](t *testing.T, q *Priorit
 }
 
 func TestPriorityQueueDeleteMinHeap(t *testing.T) {
-	pq := NewPriorityQueue[int](false)
-	pqTestPriorityQueueDeleteImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{8, 12, 13, 15}, 19)
+	pq := NewPriorityQueue[container.Int](false)
+	pqTestPriorityQueueDeleteImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{8, 12, 13, 15}, 19)
 }
 
 func TestPriorityQueueDeleteMinHeapWithComparator(t *testing.T) {
-	pq := NewPriorityQueue[int](true)
-	pqTestPriorityQueueDeleteImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{19, 13, 12, 8}, 15)
+	pq := NewPriorityQueue[container.Int](true)
+	pqTestPriorityQueueDeleteImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{19, 13, 12, 8}, 15)
 }
 
 func TestPriorityQueueDeleteMaxHeap(t *testing.T) {
-	pq := NewPriorityQueue[int](true)
-	pqTestPriorityQueueDeleteImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{19, 15, 13, 8}, 12)
+	pq := NewPriorityQueue[container.Int](true)
+	pqTestPriorityQueueDeleteImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{19, 15, 13, 8}, 12)
 }
 
-func pqTestPriorityQueueDeleteImpl[T constraints.Ordered](t *testing.T, q *PriorityQueue[T], input, expected []T, val T) {
+func pqTestPriorityQueueDeleteImpl[T container.Comparable](t *testing.T, q *PriorityQueue[T], input, expected []T, val T) {
 	for i := 0; i < len(input); i++ {
 		q.Add(input[i])
 	}

@@ -18,7 +18,7 @@ package arraylist
 import (
 	"fmt"
 
-	"golang.org/x/exp/slices"
+	"slices"
 
 	"github.com/things-go/container"
 )
@@ -212,7 +212,7 @@ func (sf *List[T]) Contains(val T) bool {
 }
 
 // Sort the list.
-func (sf *List[T]) Sort(less func(a, b T) bool) {
+func (sf *List[T]) Sort(less func(a, b T) int) {
 	slices.SortFunc(sf.items, less)
 }
 

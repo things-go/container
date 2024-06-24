@@ -18,7 +18,7 @@ package linkedlist
 import (
 	"fmt"
 
-	"golang.org/x/exp/slices"
+	"slices"
 
 	"github.com/things-go/container"
 	"github.com/things-go/container/core/list"
@@ -181,7 +181,7 @@ func (sf *LinkedList[T]) Contains(val T) bool {
 }
 
 // Sort the list.
-func (sf *LinkedList[T]) Sort(less func(a, b T) bool) {
+func (sf *LinkedList[T]) Sort(less func(a, b T) int) {
 	if sf.Len() <= 1 {
 		return
 	}

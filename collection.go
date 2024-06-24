@@ -1,5 +1,9 @@
 package container
 
+type Comparable interface {
+	CompareTo(Comparable) int
+}
+
 // Stack is a Stack interface, which is LIFO (last-in-first-out).
 type Stack[T any] interface {
 	// Len returns the number of elements in the collection.
@@ -84,7 +88,7 @@ type List[T comparable] interface {
 	Contains(val T) bool
 	// Sort sorts the element using default options below.
 	// It sorts the elements into ascending sequence according to their natural ordering.
-	Sort(less func(a, b T) bool)
+	Sort(less func(a, b T) int)
 	// Values get a copy of all the values in the list
 	Values() []T
 }

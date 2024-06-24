@@ -172,7 +172,7 @@ func TestArrayListSort(t *testing.T) {
 	ll.PushBack(4)
 
 	// sort
-	ll.Sort(func(i, j int) bool { return i < j })
+	ll.Sort(func(i, j int) int { return i - j })
 	assert.Equal(t, 4, ll.Len())
 	for i := 0; i < ll.Len(); i++ {
 		v, err := ll.Get(i)
@@ -181,7 +181,7 @@ func TestArrayListSort(t *testing.T) {
 	}
 
 	// reverse sorting
-	ll.Sort(func(i, j int) bool { return i > j })
+	ll.Sort(func(i, j int) int { return j - i })
 	assert.Equal(t, 4, ll.Len())
 	for i := 0; i < ll.Len(); i++ {
 		v, err := ll.Get(i)
