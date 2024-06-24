@@ -20,16 +20,13 @@ import (
 	"github.com/things-go/container"
 )
 
-// var _ container.Queue[int] = (*PriorityQueue[int])(nil)
+var _ container.Queue[container.Int] = (*PriorityQueue[container.Int])(nil)
 
 // PriorityQueue represents an unbounded priority queue based on a priority heap.
 // It implements heap.Interface.
 type PriorityQueue[T container.Comparable] struct {
 	data *container.Container[T]
 }
-
-// Option for NewPriorityQueue.
-type Option[T container.Comparable] func(q *PriorityQueue[T])
 
 // NewPriorityQueue initializes and returns an Queue, default min heap.
 func NewPriorityQueue[T container.Comparable](maxHeap bool, items ...T) *PriorityQueue[T] {
