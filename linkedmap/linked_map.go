@@ -16,7 +16,7 @@ package linkedmap
 
 import (
 	"github.com/things-go/container"
-	"github.com/things-go/container/core/list"
+	"github.com/things-go/container/go/list"
 )
 
 var _ container.LinkedMap[int, int] = (*LinkedMap[int, int])(nil)

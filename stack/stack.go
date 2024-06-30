@@ -17,7 +17,7 @@ package stack
 
 import (
 	"github.com/things-go/container"
-	"github.com/things-go/container/core/list"
+	"github.com/things-go/container/go/list"
 )
 
 var _ container.Stack[int] = (*Stack[int])(nil)

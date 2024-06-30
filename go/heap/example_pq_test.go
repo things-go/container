@@ -8,7 +8,7 @@ package heap_test
 import (
 	"fmt"
 
-	"github.com/things-go/container/core/heap"
+	"github.com/things-go/container/go/heap"
 )
 
 var _ heap.Interface[*Item] = (*PriorityQueue)(nil)

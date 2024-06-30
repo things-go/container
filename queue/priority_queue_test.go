@@ -61,7 +61,7 @@ func TestPriorityQueueValue(t *testing.T) {
 	// Peek
 	val, ok := q.Peek()
 	require.True(t, ok)
-	require.Equal(t, 8, val)
+	require.Equal(t, container.Int(8), val)
 	require.Equal(t, 5, q.Len())
 
 	// Contains
@@ -71,12 +71,12 @@ func TestPriorityQueueValue(t *testing.T) {
 	// Poll
 	val, ok = q.Poll()
 	require.True(t, ok)
-	require.Equal(t, 8, val)
+	require.Equal(t, container.Int(8), val)
 	require.Equal(t, 4, q.Len())
 
 	val, ok = q.Poll()
 	require.True(t, ok)
-	require.Equal(t, 12, val)
+	require.Equal(t, container.Int(12), val)
 	require.Equal(t, 3, q.Len())
 
 	// Contains (again)

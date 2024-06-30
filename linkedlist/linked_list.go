@@ -21,7 +21,7 @@ import (
 	"slices"
 
 	"github.com/things-go/container"
-	"github.com/things-go/container/core/list"
+	"github.com/things-go/container/go/list"
 )
 
 var _ container.List[int] = (*LinkedList[int])(nil)
