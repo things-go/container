@@ -38,11 +38,11 @@ func (h *IntHeap) Pop() int {
 // and removes them in order of priority.
 func Example_intHeap() {
 	h := &IntHeap{2, 1, 5}
-	heap.Init[int](h)
-	heap.Push[int](h, 3)
+	heap.Init(h)
+	heap.Push(h, 3)
 	fmt.Printf("minimum: %d\n", (*h)[0])
 	for h.Len() > 0 {
-		fmt.Printf("%d ", heap.Pop[int](h))
+		fmt.Printf("%d ", heap.Pop(h))
 	}
 	// Output:
 	// minimum: 1

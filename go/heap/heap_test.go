@@ -58,7 +58,7 @@ func TestInit0(t *testing.T) {
 	for i := 20; i > 0; i-- {
 		h.Push(0) // all elements are the same
 	}
-	Init[int](h)
+	Init(h)
 	h.verify(t, 0)
 
 	for i := 1; h.Len() > 0; i++ {
@@ -75,11 +75,11 @@ func TestInit1(t *testing.T) {
 	for i := 20; i > 0; i-- {
 		h.Push(i) // all elements are different
 	}
-	Init[int](h)
+	Init(h)
 	h.verify(t, 0)
 
 	for i := 1; h.Len() > 0; i++ {
-		x := Pop[int](h)
+		x := Pop(h)
 		h.verify(t, 0)
 		if x != i {
 			t.Errorf("%d.th pop got %d; want %d", i, x, i)
@@ -94,18 +94,18 @@ func Test(t *testing.T) {
 	for i := 20; i > 10; i-- {
 		h.Push(i)
 	}
-	Init[int](h)
+	Init(h)
 	h.verify(t, 0)
 
 	for i := 10; i > 0; i-- {
-		Push[int](h, i)
+		Push(h, i)
 		h.verify(t, 0)
 	}
 
 	for i := 1; h.Len() > 0; i++ {
-		x := Pop[int](h)
+		x := Pop(h)
 		if i < 20 {
-			Push[int](h, 20+i)
+			Push(h, 20+i)
 		}
 		h.verify(t, 0)
 		if x != i {
@@ -123,7 +123,7 @@ func TestRemove0(t *testing.T) {
 
 	for h.Len() > 0 {
 		i := h.Len() - 1
-		x := Remove[int](h, i)
+		x := Remove(h, i)
 		if x != i {
 			t.Errorf("Remove(%d) got %d; want %d", i, x, i)
 		}
@@ -139,7 +139,7 @@ func TestRemove1(t *testing.T) {
 	h.verify(t, 0)
 
 	for i := 0; h.Len() > 0; i++ {
-		x := Remove[int](h, 0)
+		x := Remove(h, 0)
 		if x != i {
 			t.Errorf("Remove(0) got %d; want %d", x, i)
 		}
@@ -158,7 +158,7 @@ func TestRemove2(t *testing.T) {
 
 	m := make(map[int]bool)
 	for h.Len() > 0 {
-		m[Remove[int](h, (h.Len()-1)/2)] = true
+		m[Remove(h, (h.Len()-1)/2)] = true
 		h.verify(t, 0)
 	}
 
@@ -177,10 +177,10 @@ func BenchmarkDup(b *testing.B) {
 	h := make(myHeap, 0, n)
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < n; j++ {
-			Push[int](&h, 0) // all elements are the same
+			Push(&h, 0) // all elements are the same
 		}
 		for h.Len() > 0 {
-			Pop[int](&h)
+			Pop(&h)
 		}
 	}
 }
@@ -190,7 +190,7 @@ func TestFix(t *testing.T) {
 	h.verify(t, 0)
 
 	for i := 200; i > 0; i -= 10 {
-		Push[int](h, i)
+		Push(h, i)
 	}
 	h.verify(t, 0)
 
@@ -198,7 +198,7 @@ func TestFix(t *testing.T) {
 		t.Fatalf("Expected head to be 10, was %d", (*h)[0])
 	}
 	(*h)[0] = 210
-	Fix[int](h, 0)
+	Fix(h, 0)
 	h.verify(t, 0)
 
 	for i := 100; i > 0; i-- {
@@ -208,7 +208,7 @@ func TestFix(t *testing.T) {
 		} else {
 			(*h)[elem] /= 2
 		}
-		Fix[int](h, elem)
+		Fix(h, elem)
 		h.verify(t, 0)
 	}
 }
