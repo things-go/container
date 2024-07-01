@@ -45,15 +45,15 @@ func NewPriorityQueue[T cmp.Ordered](maxHeap bool, items ...T) *PriorityQueue[T]
 
 // NewPriorityQueue initializes and returns an Queue, default min heap.
 func NewPriorityQueueWith[T comparable](maxHeap bool, compare comparator.Comparable[T], items ...T) *PriorityQueue[T] {
-	q := &PriorityQueue[T]{
+	pq := &PriorityQueue[T]{
 		container: &comparator.Container[T]{
 			Items:   items,
 			Desc:    maxHeap,
 			Compare: compare,
 		},
 	}
-	heap.Init(q.container)
-	return q
+	heap.Init(pq.container)
+	return pq
 }
 
 // Len returns the length of this priority queue.
