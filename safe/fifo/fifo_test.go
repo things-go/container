@@ -21,7 +21,7 @@ func mkFifoObj(name string, val interface{}) testFifoObject {
 	return testFifoObject{name: name, val: val}
 }
 
-func TestFIFO_basic(t *testing.T) {
+func Test_FIFO_basic(t *testing.T) {
 	f := New[testFifoObject](testFifoObjectKeyFunc)
 	const amount = 500
 	go func() {
@@ -56,7 +56,7 @@ func TestFIFO_basic(t *testing.T) {
 	}
 }
 
-func TestFIFO_requeueOnPop(t *testing.T) {
+func Test_FIFO_requeueOnPop(t *testing.T) {
 	f := New[testFifoObject](testFifoObjectKeyFunc)
 
 	f.Add(mkFifoObj("foo", 10)) // nolint: errcheck
@@ -100,7 +100,7 @@ func TestFIFO_requeueOnPop(t *testing.T) {
 	}
 }
 
-func TestFIFO_addUpdate(t *testing.T) {
+func Test_FIFO_addUpdate(t *testing.T) {
 	f := New[testFifoObject](testFifoObjectKeyFunc)
 	f.Add(mkFifoObj("foo", 10))    // nolint: errcheck
 	f.Update(mkFifoObj("foo", 15)) // nolint: errcheck
@@ -134,7 +134,7 @@ func TestFIFO_addUpdate(t *testing.T) {
 	}
 }
 
-func TestFIFO_addReplace(t *testing.T) {
+func Test_FIFO_addReplace(t *testing.T) {
 	f := New(testFifoObjectKeyFunc)
 	f.Add(mkFifoObj("foo", 10))                             // nolint: errcheck
 	f.Replace([]testFifoObject{mkFifoObj("foo", 15)}, "15") // nolint: errcheck
@@ -160,7 +160,7 @@ func TestFIFO_addReplace(t *testing.T) {
 	}
 }
 
-func TestFIFO_detectLineJumpers(t *testing.T) {
+func Test_FIFO_detectLineJumpers(t *testing.T) {
 	f := New[testFifoObject](testFifoObjectKeyFunc)
 
 	f.Add(mkFifoObj("foo", 10)) // nolint: errcheck
@@ -188,7 +188,7 @@ func TestFIFO_detectLineJumpers(t *testing.T) {
 	}
 }
 
-func TestFIFO_addIfNotPresent(t *testing.T) {
+func Test_FIFO_addIfNotPresent(t *testing.T) {
 	f := New[testFifoObject](testFifoObjectKeyFunc)
 
 	f.Add(mkFifoObj("a", 1))             // nolint: errcheck
@@ -208,7 +208,7 @@ func TestFIFO_addIfNotPresent(t *testing.T) {
 	}
 }
 
-func TestFIFO_Delete(t *testing.T) {
+func Test_FIFO_Delete(t *testing.T) {
 	f := New(testFifoObjectKeyFunc)
 
 	f.Add(mkFifoObj("a", 1))             // nolint: errcheck
@@ -229,7 +229,7 @@ func TestFIFO_Delete(t *testing.T) {
 	}
 }
 
-func TestFIFO_HasSynced(t *testing.T) {
+func Test_FIFO_HasSynced(t *testing.T) {
 	tests := []struct {
 		actions        []func(f *FIFO[testFifoObject])
 		expectedSynced bool
@@ -297,7 +297,7 @@ func TestFIFO_HasSynced(t *testing.T) {
 
 // TestFIFO_PopShouldUnblockWhenClosed checks that any blocking Pop on an empty queue
 // should unblock and return after Close is called.
-func TestFIFO_PopShouldUnblockWhenClosed(t *testing.T) {
+func Test_FIFO_PopShouldUnblockWhenClosed(t *testing.T) {
 	f := New(testFifoObjectKeyFunc)
 
 	c := make(chan struct{})
@@ -325,7 +325,7 @@ func TestFIFO_PopShouldUnblockWhenClosed(t *testing.T) {
 	}
 }
 
-func TestFIFO_Resync(t *testing.T) {
+func Test_FIFO_Resync(t *testing.T) {
 	f := New(testFifoObjectKeyFunc)
 
 	if err := f.Resync(); err != nil {

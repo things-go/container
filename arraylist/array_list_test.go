@@ -1,14 +1,14 @@
 package arraylist
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/slices"
 )
 
-func TestArrayListLen(t *testing.T) {
+func Test_ArrayListLen(t *testing.T) {
 	l := New[int]()
 
 	l.PushBack(5)
@@ -33,7 +33,7 @@ func TestArrayListLen(t *testing.T) {
 	assert.True(t, l.IsEmpty())
 }
 
-func TestArrayListValue(t *testing.T) {
+func Test_ArrayListValue(t *testing.T) {
 	l := New[int]()
 	l.Push(5)
 	l.PushBack(7)
@@ -134,7 +134,7 @@ func TestArrayListValue(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestArrayListIterator(t *testing.T) {
+func Test_ArrayListIterator(t *testing.T) {
 	l := New[int]()
 	items := []int{5, 6, 7}
 	l.PushBack(5)
@@ -149,7 +149,7 @@ func TestArrayListIterator(t *testing.T) {
 	l.Iterator(nil)
 }
 
-func TestArrayListReverseIterator(t *testing.T) {
+func Test_ArrayListReverseIterator(t *testing.T) {
 	items := []int{5, 6, 7}
 	l := New[int]()
 	l.PushBack(5)
@@ -164,7 +164,7 @@ func TestArrayListReverseIterator(t *testing.T) {
 	l.ReverseIterator(nil)
 }
 
-func TestArrayListSort(t *testing.T) {
+func Test_ArrayListSort(t *testing.T) {
 	ll := New[int]()
 
 	expect := []int{4, 6, 7, 15}
@@ -193,7 +193,7 @@ func TestArrayListSort(t *testing.T) {
 	}
 }
 
-func TestExtending(t *testing.T) {
+func Test_Extending(t *testing.T) {
 	l1 := New[int]()
 	l2 := New[int]()
 

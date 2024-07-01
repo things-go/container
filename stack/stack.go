@@ -24,45 +24,45 @@ var _ container.Stack[int] = (*Stack[int])(nil)
 
 // Stack is LIFO implement list.List.
 type Stack[T any] struct {
-	ll *list.List[T]
+	list *list.List[T]
 }
 
 // New creates a Stack. which implement interface stack.Interface.
 func New[T any]() *Stack[T] { return &Stack[T]{list.New[T]()} }
 
 // Len returns the length of this priority queue.
-func (sf *Stack[T]) Len() int { return sf.ll.Len() }
+func (qs *Stack[T]) Len() int { return qs.list.Len() }
 
 // IsEmpty returns true if this Stack contains no elements.
-func (sf *Stack[T]) IsEmpty() bool { return sf.ll.Len() == 0 }
+func (qs *Stack[T]) IsEmpty() bool { return qs.list.Len() == 0 }
 
 // Clear removes all the elements from this Stack.
-func (sf *Stack[T]) Clear() { sf.ll.Init() }
+func (qs *Stack[T]) Clear() { qs.list.Init() }
 
 // Push pushes an element into this Stack.
-func (sf *Stack[T]) Push(val T) { sf.ll.PushFront(val) }
+func (qs *Stack[T]) Push(val T) { qs.list.PushFront(val) }
 
 // Pop pops the element on the top of this Stack.
-func (sf *Stack[T]) Pop() (v T, ok bool) {
-	if e := sf.ll.Front(); e != nil {
-		return sf.ll.Remove(e), true
+func (qs *Stack[T]) Pop() (v T, ok bool) {
+	if e := qs.list.Front(); e != nil {
+		return qs.list.Remove(e), true
 	}
 	return v, false
 }
 
 // Peek retrieves, but does not remove,
 // the element on the top of this Stack, or return nil if this Stack is empty.
-func (sf *Stack[T]) Peek() (v T, ok bool) {
-	if e := sf.ll.Front(); e != nil {
+func (qs *Stack[T]) Peek() (v T, ok bool) {
+	if e := qs.list.Front(); e != nil {
 		return e.Value, true
 	}
 	return v, false
 }
 
 // Copy returns a copy of this stack.
-func (sf *Stack[T]) Clone() *Stack[T] {
+func (qs *Stack[T]) Clone() *Stack[T] {
 	s := New[T]()
-	for e := sf.ll.Front(); e != nil; e = e.Next() {
+	for e := qs.list.Front(); e != nil; e = e.Next() {
 		s.Push(e.Value)
 	}
 	return s

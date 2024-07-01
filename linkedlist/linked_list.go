@@ -29,99 +29,99 @@ var _ container.List[int] = (*LinkedList[int])(nil)
 // LinkedList represents a doubly linked list.
 // It implements the interface list.Interface.
 type LinkedList[T comparable] struct {
-	l *list.List[T]
+	list *list.List[T]
 }
 
 // New initializes and returns an LinkedList.
 func New[T comparable]() *LinkedList[T] {
-	return &LinkedList[T]{l: list.New[T]()}
+	return &LinkedList[T]{list: list.New[T]()}
 }
 
 // Len returns the number of elements of list l.
 // The complexity is O(1).
-func (sf *LinkedList[T]) Len() int { return sf.l.Len() }
+func (ll *LinkedList[T]) Len() int { return ll.list.Len() }
 
 // IsEmpty returns the list l is empty or not.
-func (sf *LinkedList[T]) IsEmpty() bool { return sf.l.Len() == 0 }
+func (ll *LinkedList[T]) IsEmpty() bool { return ll.list.Len() == 0 }
 
 // Clear initializes or clears list l.
-func (sf *LinkedList[T]) Clear() { sf.l.Init() }
+func (ll *LinkedList[T]) Clear() { ll.list.Init() }
 
 // Push inserts a new element e with value v at the back of list l.
-func (sf *LinkedList[T]) Push(v T) { sf.l.PushBack(v) }
+func (ll *LinkedList[T]) Push(v T) { ll.list.PushBack(v) }
 
 // PushFront inserts a new element e with value v at the front of list l.
-func (sf *LinkedList[T]) PushFront(v T) { sf.l.PushFront(v) }
+func (ll *LinkedList[T]) PushFront(v T) { ll.list.PushFront(v) }
 
 // PushBack inserts a new element e with value v at the back of list l.
-func (sf *LinkedList[T]) PushBack(v T) { sf.l.PushBack(v) }
+func (ll *LinkedList[T]) PushBack(v T) { ll.list.PushBack(v) }
 
 // Add add to the index of the list with value.
-func (sf *LinkedList[T]) Add(index int, val T) error {
-	if index < 0 || index > sf.Len() {
-		return fmt.Errorf("index out of range, index: %d, len: %d", index, sf.Len())
+func (ll *LinkedList[T]) Add(index int, val T) error {
+	if index < 0 || index > ll.Len() {
+		return fmt.Errorf("index out of range, index: %d, len: %d", index, ll.Len())
 	}
 
-	if index == sf.Len() {
-		sf.l.PushBack(val)
+	if index == ll.Len() {
+		ll.list.PushBack(val)
 	} else {
-		sf.l.InsertBefore(val, sf.getElement(index))
+		ll.list.InsertBefore(val, ll.getElement(index))
 	}
 	return nil
 }
 
 // PushFrontList inserts a copy of another list at the front of list l.
 // The lists l and other may be the same. They must not be nil.
-func (sf *LinkedList[T]) PushFrontList(other *LinkedList[T]) {
-	sf.l.PushFrontList(other.l)
+func (ll *LinkedList[T]) PushFrontList(other *LinkedList[T]) {
+	ll.list.PushFrontList(other.list)
 }
 
 // PushBackList inserts a copy of another list at the back of list l.
 // The lists l and other may be the same. They must not be nil.
-func (sf *LinkedList[T]) PushBackList(other *LinkedList[T]) {
-	sf.l.PushBackList(other.l)
+func (ll *LinkedList[T]) PushBackList(other *LinkedList[T]) {
+	ll.list.PushBackList(other.list)
 }
 
 // Poll return the front element value and then remove from list.
-func (sf *LinkedList[T]) Poll() (T, bool) {
-	return sf.PollFront()
+func (ll *LinkedList[T]) Poll() (T, bool) {
+	return ll.PollFront()
 }
 
 // PollFront return the front element value and then remove from list.
-func (sf *LinkedList[T]) PollFront() (val T, ok bool) {
-	e := sf.l.Front()
+func (ll *LinkedList[T]) PollFront() (val T, ok bool) {
+	e := ll.list.Front()
 	if e != nil {
-		return sf.l.Remove(e), true
+		return ll.list.Remove(e), true
 	}
 	return val, false
 }
 
 // PollBack return the back element value and then remove from list.
-func (sf *LinkedList[T]) PollBack() (val T, ok bool) {
-	e := sf.l.Back()
+func (ll *LinkedList[T]) PollBack() (val T, ok bool) {
+	e := ll.list.Back()
 	if e != nil {
-		return sf.l.Remove(e), true
+		return ll.list.Remove(e), true
 	}
 	return val, false
 }
 
 // Remove remove the index in the list.
-func (sf *LinkedList[T]) Remove(index int) (val T, err error) {
-	if index < 0 || index >= sf.Len() {
-		return val, fmt.Errorf("index out of range, index:%d, len:%d", index, sf.Len())
+func (ll *LinkedList[T]) Remove(index int) (val T, err error) {
+	if index < 0 || index >= ll.Len() {
+		return val, fmt.Errorf("index out of range, index:%d, len:%d", index, ll.Len())
 	}
-	return sf.l.Remove(sf.getElement(index)), nil
+	return ll.list.Remove(ll.getElement(index)), nil
 }
 
 // RemoveValue remove the value in the list.
-func (sf *LinkedList[T]) RemoveValue(val T) bool {
-	if sf.Len() == 0 {
+func (ll *LinkedList[T]) RemoveValue(val T) bool {
+	if ll.Len() == 0 {
 		return false
 	}
 
-	for e := sf.l.Front(); e != nil; e = e.Next() {
+	for e := ll.list.Front(); e != nil; e = e.Next() {
 		if val == e.Value {
-			sf.l.Remove(e)
+			ll.list.Remove(e)
 			return true
 		}
 	}
@@ -129,37 +129,37 @@ func (sf *LinkedList[T]) RemoveValue(val T) bool {
 }
 
 // Get the index in the list.
-func (sf *LinkedList[T]) Get(index int) (val T, err error) {
-	if index < 0 || index >= sf.Len() {
-		return val, fmt.Errorf("index out of range, index: %d, len: %d", index, sf.Len())
+func (ll *LinkedList[T]) Get(index int) (val T, err error) {
+	if index < 0 || index >= ll.Len() {
+		return val, fmt.Errorf("index out of range, index: %d, len: %d", index, ll.Len())
 	}
-	return sf.getElement(index).Value, nil
+	return ll.getElement(index).Value, nil
 }
 
 // Peek return the front element value.
-func (sf *LinkedList[T]) Peek() (T, bool) {
-	return sf.PeekFront()
+func (ll *LinkedList[T]) Peek() (T, bool) {
+	return ll.PeekFront()
 }
 
 // PeekFront return the front element value.
-func (sf *LinkedList[T]) PeekFront() (val T, ok bool) {
-	if e := sf.l.Front(); e != nil {
+func (ll *LinkedList[T]) PeekFront() (val T, ok bool) {
+	if e := ll.list.Front(); e != nil {
 		return e.Value, true
 	}
 	return val, false
 }
 
 // PeekBack return the back element value.
-func (sf *LinkedList[T]) PeekBack() (val T, ok bool) {
-	if e := sf.l.Back(); e != nil {
+func (ll *LinkedList[T]) PeekBack() (val T, ok bool) {
+	if e := ll.list.Back(); e != nil {
 		return e.Value, true
 	}
 	return val, false
 }
 
 // Iterator the list.
-func (sf *LinkedList[T]) Iterator(cb func(T) bool) {
-	for e := sf.l.Front(); e != nil; e = e.Next() {
+func (ll *LinkedList[T]) Iterator(cb func(T) bool) {
+	for e := ll.list.Front(); e != nil; e = e.Next() {
 		if cb == nil || !cb(e.Value) {
 			return
 		}
@@ -167,8 +167,8 @@ func (sf *LinkedList[T]) Iterator(cb func(T) bool) {
 }
 
 // ReverseIterator reverse iterator the list.
-func (sf *LinkedList[T]) ReverseIterator(cb func(T) bool) {
-	for e := sf.l.Back(); e != nil; e = e.Prev() {
+func (ll *LinkedList[T]) ReverseIterator(cb func(T) bool) {
+	for e := ll.list.Back(); e != nil; e = e.Prev() {
 		if cb == nil || !cb(e.Value) {
 			return
 		}
@@ -176,35 +176,35 @@ func (sf *LinkedList[T]) ReverseIterator(cb func(T) bool) {
 }
 
 // Contains contains the value.
-func (sf *LinkedList[T]) Contains(val T) bool {
-	return sf.indexOf(val) >= 0
+func (ll *LinkedList[T]) Contains(val T) bool {
+	return ll.indexOf(val) >= 0
 }
 
 // Sort the list.
-func (sf *LinkedList[T]) Sort(less func(a, b T) int) {
-	if sf.Len() <= 1 {
+func (ll *LinkedList[T]) Sort(less func(a, b T) int) {
+	if ll.Len() <= 1 {
 		return
 	}
 
 	// get all the Values and sort the data
-	vs := sf.Values()
+	vs := ll.Values()
 	slices.SortFunc(vs, less)
 
 	// clear the linked list and push it back
-	sf.Clear()
+	ll.Clear()
 	for i := 0; i < len(vs); i++ {
-		sf.PushBack(vs[i])
+		ll.PushBack(vs[i])
 	}
 }
 
 // Values get a copy of all the values in the list.
-func (sf *LinkedList[T]) Values() []T {
-	if sf.Len() == 0 {
+func (ll *LinkedList[T]) Values() []T {
+	if ll.Len() == 0 {
 		return []T{}
 	}
 
-	values := make([]T, 0, sf.Len())
-	sf.Iterator(func(v T) bool {
+	values := make([]T, 0, ll.Len())
+	ll.Iterator(func(v T) bool {
 		values = append(values, v)
 		return true
 	})
@@ -212,15 +212,15 @@ func (sf *LinkedList[T]) Values() []T {
 }
 
 // getElement returns the element at the specified position.
-func (sf *LinkedList[T]) getElement(index int) *list.Element[T] {
+func (ll *LinkedList[T]) getElement(index int) *list.Element[T] {
 	var e *list.Element[T]
 
-	if i, length := 0, sf.Len(); index < (length >> 1) {
-		for i, e = 0, sf.l.Front(); i < index; i++ {
+	if i, length := 0, ll.Len(); index < (length >> 1) {
+		for i, e = 0, ll.list.Front(); i < index; i++ {
 			e = e.Next()
 		}
 	} else {
-		for i, e = length-1, sf.l.Back(); i > index; i-- {
+		for i, e = length-1, ll.list.Back(); i > index; i-- {
 			e = e.Prev()
 		}
 	}
@@ -229,8 +229,8 @@ func (sf *LinkedList[T]) getElement(index int) *list.Element[T] {
 
 // indexOf returns the index of the first occurrence of the specified element
 // in this list, or -1 if this list does not contain the element.
-func (sf *LinkedList[T]) indexOf(val T) int {
-	for index, e := 0, sf.l.Front(); e != nil; e = e.Next() {
+func (ll *LinkedList[T]) indexOf(val T) int {
+	for index, e := 0, ll.list.Front(); e != nil; e = e.Next() {
 		if val == e.Value {
 			return index
 		}

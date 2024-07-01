@@ -15,23 +15,23 @@ type QuickStack[T any] struct {
 func NewQuickStack[T any]() *QuickStack[T] { return &QuickStack[T]{} }
 
 // Len returns the length of this priority queue.
-func (sf *QuickStack[T]) Len() int { return len(sf.items) }
+func (qs *QuickStack[T]) Len() int { return len(qs.items) }
 
 // IsEmpty returns true if this QuickStack contains no elements.
-func (sf *QuickStack[T]) IsEmpty() bool { return len(sf.items) == 0 }
+func (qs *QuickStack[T]) IsEmpty() bool { return len(qs.items) == 0 }
 
 // Clear removes all the elements from this QuickStack.
-func (sf *QuickStack[T]) Clear() { sf.items = nil } // should set nil for gc
+func (qs *QuickStack[T]) Clear() { qs.items = nil } // should set nil for gc
 
 // Push an element into this QuickStack.
-func (sf *QuickStack[T]) Push(val T) { sf.items = append(sf.items, val) }
+func (qs *QuickStack[T]) Push(val T) { qs.items = append(qs.items, val) }
 
 // Pop the element on the top of this QuickStack.
 // return nil if this QuickStack is empty.
-func (sf *QuickStack[T]) Pop() (v T, ok bool) {
-	if length := len(sf.items); length > 0 {
-		val := sf.items[length-1]
-		sf.items = sf.items[:length-1]
+func (qs *QuickStack[T]) Pop() (v T, ok bool) {
+	if length := len(qs.items); length > 0 {
+		val := qs.items[length-1]
+		qs.items = qs.items[:length-1]
 		return val, true
 	}
 	return v, false
@@ -40,16 +40,16 @@ func (sf *QuickStack[T]) Pop() (v T, ok bool) {
 // Peek retrieves, but does not remove,
 // the element on the top of this QuickStack,
 // or return nil if this QuickStack is empty.
-func (sf *QuickStack[T]) Peek() (v T, ok bool) {
-	if len(sf.items) > 0 {
-		return sf.items[len(sf.items)-1], true
+func (qs *QuickStack[T]) Peek() (v T, ok bool) {
+	if len(qs.items) > 0 {
+		return qs.items[len(qs.items)-1], true
 	}
 	return v, false
 }
 
 // Copy returns a copy of this stack.
-func (sf *QuickStack[T]) Clone() *QuickStack[T] {
-	items := make([]T, len(sf.items))
-	copy(items, sf.items)
+func (qs *QuickStack[T]) Clone() *QuickStack[T] {
+	items := make([]T, len(qs.items))
+	copy(items, qs.items)
 	return &QuickStack[T]{items}
 }

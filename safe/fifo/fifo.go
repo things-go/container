@@ -4,9 +4,6 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/things-go/sets"
-	"golang.org/x/exp/maps"
-
 	"github.com/things-go/container"
 )
 
@@ -136,36 +133,36 @@ func New[T any](keyFunc container.KeyFunc[T]) *FIFO[T] {
 }
 
 // Close the queue.
-func (sf *FIFO[T]) Close() {
-	sf.rw.Lock()
-	defer sf.rw.Unlock()
-	sf.closed = true
-	sf.cond.Broadcast()
+func (f *FIFO[T]) Close() {
+	f.rw.Lock()
+	defer f.rw.Unlock()
+	f.closed = true
+	f.cond.Broadcast()
 }
 
 // HasSynced returns true if an Push/Update/Delete/AddIfNotPresent are called first,
 // or the first batch of items inserted by Replace() has been popped.
-func (sf *FIFO[T]) HasSynced() bool {
-	sf.rw.Lock()
-	defer sf.rw.Unlock()
-	return sf.populated && sf.initialPopulationCount == 0
+func (f *FIFO[T]) HasSynced() bool {
+	f.rw.Lock()
+	defer f.rw.Unlock()
+	return f.populated && f.initialPopulationCount == 0
 }
 
 // Add inserts an item, and puts it in the queue.
 // The item is only enqueued if it doesn't already exist in the set.
-func (sf *FIFO[T]) Add(obj T) error {
-	key, err := sf.keyFunc(obj)
+func (f *FIFO[T]) Add(obj T) error {
+	key, err := f.keyFunc(obj)
 	if err != nil {
 		return container.KeyError[T]{Obj: obj, Err: err}
 	}
-	sf.rw.Lock()
-	defer sf.rw.Unlock()
-	sf.populated = true
-	if _, exists := sf.items[key]; !exists {
-		sf.queue = append(sf.queue, key)
+	f.rw.Lock()
+	defer f.rw.Unlock()
+	f.populated = true
+	if _, exists := f.items[key]; !exists {
+		f.queue = append(f.queue, key)
 	}
-	sf.items[key] = obj
-	sf.cond.Broadcast()
+	f.items[key] = obj
+	f.cond.Broadcast()
 	return nil
 }
 
@@ -175,87 +172,87 @@ func (sf *FIFO[T]) Add(obj T) error {
 // This is useful in a single producer/consumer scenario so that the consumer can
 // safely retry items without contending with the producer and potentially enqueueing
 // stale items.
-func (sf *FIFO[T]) AddIfNotPresent(obj T) error {
-	key, err := sf.keyFunc(obj)
+func (f *FIFO[T]) AddIfNotPresent(obj T) error {
+	key, err := f.keyFunc(obj)
 	if err != nil {
 		return container.KeyError[T]{Obj: obj, Err: err}
 	}
-	sf.rw.Lock()
-	defer sf.rw.Unlock()
-	sf.addIfNotPresent(key, obj)
+	f.rw.Lock()
+	defer f.rw.Unlock()
+	f.addIfNotPresent(key, obj)
 	return nil
 }
 
 // addIfNotPresent assumes the fifo lock is already held and adds the provided
 // item to the queue under id if it does not already exist.
-func (sf *FIFO[T]) addIfNotPresent(key string, obj T) {
-	sf.populated = true
-	if _, exists := sf.items[key]; exists {
+func (f *FIFO[T]) addIfNotPresent(key string, obj T) {
+	f.populated = true
+	if _, exists := f.items[key]; exists {
 		return
 	}
 
-	sf.queue = append(sf.queue, key)
-	sf.items[key] = obj
-	sf.cond.Broadcast()
+	f.queue = append(f.queue, key)
+	f.items[key] = obj
+	f.cond.Broadcast()
 }
 
 // Update is the same as Add in this implementation.
-func (sf *FIFO[T]) Update(obj T) error {
-	return sf.Add(obj)
+func (f *FIFO[T]) Update(obj T) error {
+	return f.Add(obj)
 }
 
 // Delete removes an item. It doesn't add it to the queue, because
 // this implementation assumes the consumer only cares about the objects,
 // not the order in which they were created/added.
-func (sf *FIFO[T]) Delete(obj T) error {
-	id, err := sf.keyFunc(obj)
+func (f *FIFO[T]) Delete(obj T) error {
+	id, err := f.keyFunc(obj)
 	if err != nil {
 		return container.KeyError[T]{Obj: obj, Err: err}
 	}
-	sf.rw.Lock()
-	defer sf.rw.Unlock()
-	sf.populated = true
-	delete(sf.items, id)
+	f.rw.Lock()
+	defer f.rw.Unlock()
+	f.populated = true
+	delete(f.items, id)
 	return err
 }
 
 // List returns a list of all the items.
-func (sf *FIFO[T]) List() []T {
-	sf.rw.RLock()
-	defer sf.rw.RUnlock()
-	return maps.Values(sf.items)
+func (f *FIFO[T]) List() []T {
+	f.rw.RLock()
+	defer f.rw.RUnlock()
+	return mapValues(f.items)
 }
 
 // ListKeys returns a list of all the keys of the objects currently
 // in the FIFO.
-func (sf *FIFO[T]) ListKeys() []string {
-	sf.rw.RLock()
-	defer sf.rw.RUnlock()
-	return maps.Keys(sf.items)
+func (f *FIFO[T]) ListKeys() []string {
+	f.rw.RLock()
+	defer f.rw.RUnlock()
+	return mapKeys(f.items)
 }
 
 // Get returns the requested item, or sets exists=false.
-func (sf *FIFO[T]) Get(obj T) (item T, exists bool, err error) {
-	key, err := sf.keyFunc(obj)
+func (f *FIFO[T]) Get(obj T) (item T, exists bool, err error) {
+	key, err := f.keyFunc(obj)
 	if err != nil {
 		return item, false, container.KeyError[T]{Obj: obj, Err: err}
 	}
-	return sf.GetByKey(key)
+	return f.GetByKey(key)
 }
 
 // GetByKey returns the requested item, or sets exists=false.
-func (sf *FIFO[T]) GetByKey(key string) (item T, exists bool, err error) {
-	sf.rw.RLock()
-	defer sf.rw.RUnlock()
-	item, exists = sf.items[key]
+func (f *FIFO[T]) GetByKey(key string) (item T, exists bool, err error) {
+	f.rw.RLock()
+	defer f.rw.RUnlock()
+	item, exists = f.items[key]
 	return item, exists, nil
 }
 
 // IsClosed checks if the queue is closed.
-func (sf *FIFO[T]) IsClosed() bool {
-	sf.rw.RLock()
-	defer sf.rw.RUnlock()
-	return sf.closed
+func (f *FIFO[T]) IsClosed() bool {
+	f.rw.RLock()
+	defer f.rw.RUnlock()
+	return f.closed
 }
 
 // Pop waits until an item is ready and processes it. If multiple items are
@@ -264,38 +261,38 @@ func (sf *FIFO[T]) IsClosed() bool {
 // so if you don't successfully process it, it should be added back with
 // AddIfNotPresent(). process function is called under lock, so it is safe
 // update data structures in it that need to be in sync with the queue.
-func (sf *FIFO[T]) Pop(process PopProcessFunc[T]) (T, error) {
+func (f *FIFO[T]) Pop(process PopProcessFunc[T]) (T, error) {
 	var placeholder T
 
-	sf.rw.Lock()
-	defer sf.rw.Unlock()
+	f.rw.Lock()
+	defer f.rw.Unlock()
 	for {
-		for len(sf.queue) == 0 {
+		for len(f.queue) == 0 {
 			// When the queue is empty, invocation of Pop() is blocked until new item is enqueued.
-			// When Close() is called, the sf.closed is set and the condition is broadcasted.
+			// When Close() is called, the f.closed is set and the condition is broadcasted.
 			// Which causes this loop to continue and return from the Pop().
-			if sf.closed {
+			if f.closed {
 				return placeholder, ErrFIFOClosed
 			}
 
-			sf.cond.Wait()
+			f.cond.Wait()
 		}
-		key := sf.queue[0]
-		sf.queue = sf.queue[1:]
-		if sf.initialPopulationCount > 0 {
-			sf.initialPopulationCount--
+		key := f.queue[0]
+		f.queue = f.queue[1:]
+		if f.initialPopulationCount > 0 {
+			f.initialPopulationCount--
 		}
-		item, ok := sf.items[key]
+		item, ok := f.items[key]
 		if !ok { // Item may have been deleted subsequently.
 			continue
 		}
-		delete(sf.items, key)
+		delete(f.items, key)
 
 		var err error
 		if process != nil {
 			err = process(item)
 			if e, ok := err.(ErrRequeue); ok {
-				sf.addIfNotPresent(key, item)
+				f.addIfNotPresent(key, item)
 				err = e.Err
 			}
 		}
@@ -307,49 +304,72 @@ func (sf *FIFO[T]) Pop(process PopProcessFunc[T]) (T, error) {
 // 'f' takes ownership of the map, you should not reference the map again
 // after calling this function. f's queue is reset, too; upon return, it
 // will contain the items in the map, in no particular order.
-func (sf *FIFO[T]) Replace(list []T, _ string) error {
+func (f *FIFO[T]) Replace(list []T, _ string) error {
 	items := make(map[string]T, len(list))
 	for _, item := range list {
-		key, err := sf.keyFunc(item)
+		key, err := f.keyFunc(item)
 		if err != nil {
 			return container.KeyError[T]{Obj: item, Err: err}
 		}
 		items[key] = item
 	}
 
-	sf.rw.Lock()
-	defer sf.rw.Unlock()
+	f.rw.Lock()
+	defer f.rw.Unlock()
 
-	if !sf.populated {
-		sf.populated = true
-		sf.initialPopulationCount = len(items)
+	if !f.populated {
+		f.populated = true
+		f.initialPopulationCount = len(items)
 	}
 
-	sf.items = items
-	sf.queue = sf.queue[:0]
+	f.items = items
+	f.queue = f.queue[:0]
 	for key := range items {
-		sf.queue = append(sf.queue, key)
+		f.queue = append(f.queue, key)
 	}
-	if len(sf.queue) > 0 {
-		sf.cond.Broadcast()
+	if len(f.queue) > 0 {
+		f.cond.Broadcast()
 	}
 	return nil
 }
 
 // Resync will ensure that every object in the Store has its key in the queue.
 // This should be a no-op, because that property is maintained by all operations.
-func (sf *FIFO[T]) Resync() error {
-	sf.rw.Lock()
-	defer sf.rw.Unlock()
+func (f *FIFO[T]) Resync() error {
+	f.rw.Lock()
+	defer f.rw.Unlock()
 
-	inQueue := sets.New(sf.queue...)
-	for key := range sf.items {
-		if !inQueue.Contains(key) {
-			sf.queue = append(sf.queue, key)
+	inQueue := make(map[string]struct{}, len(f.queue))
+	for _, v := range f.queue {
+		inQueue[v] = struct{}{}
+	}
+	for key := range f.items {
+		if _, ok := inQueue[key]; !ok {
+			f.queue = append(f.queue, key)
 		}
 	}
-	if len(sf.queue) > 0 {
-		sf.cond.Broadcast()
+	if len(f.queue) > 0 {
+		f.cond.Broadcast()
 	}
 	return nil
+}
+
+// MapValues returns the values of the map m.
+// The values will be in an indeterminate order.
+func mapValues[M ~map[K]V, K comparable, V any](m M) []V {
+	r := make([]V, 0, len(m))
+	for _, v := range m {
+		r = append(r, v)
+	}
+	return r
+}
+
+// mapKeys returns the keys of the map m.
+// The keys will be in an indeterminate order.
+func mapKeys[M ~map[K]V, K comparable, V any](m M) []K {
+	r := make([]K, 0, len(m))
+	for k := range m {
+		r = append(r, k)
+	}
+	return r
 }

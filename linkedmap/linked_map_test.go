@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLinkedMapLen(t *testing.T) {
+func Test_LinkedMapLen(t *testing.T) {
 	lm := New[int, string]()
 	lm.Push(24, "benjamin")
 	lm.Push(43, "alice")
@@ -97,7 +97,7 @@ func TestLinkedMapLen(t *testing.T) {
 	assert.Equal(t, 3, lm.Len())
 }
 
-func TestLinkedMapValue(t *testing.T) {
+func Test_LinkedMapValue(t *testing.T) {
 	equal := func(a, b string) bool { return a == b }
 	lm := New[int, string]()
 	keys := []int{24, 43, 18, 23, 35}
@@ -153,7 +153,7 @@ func TestLinkedMapValue(t *testing.T) {
 	assert.Empty(t, v)
 }
 
-func TestLinkedMapIterate(t *testing.T) {
+func Test_LinkedMapIterate(t *testing.T) {
 	lm := New[int, string]()
 	keys := []int{24, 43, 18, 23, 35}
 	values := []string{"benjamin", "alice", "john", "tom", "bill"}

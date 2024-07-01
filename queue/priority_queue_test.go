@@ -15,16 +15,16 @@
 package queue
 
 import (
+	"cmp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/things-go/container"
 )
 
-func TestPriorityQueueLen(t *testing.T) {
+func Test_PriorityQueueLen(t *testing.T) {
 	// init 3 elements
-	q := NewPriorityQueue[container.Int](false, 5, 6, 7)
+	q := NewPriorityQueueWith(false, cmp.Compare, 5, 6, 7)
 
 	require.Equal(t, 3, q.Len())
 	require.False(t, q.IsEmpty())
@@ -47,9 +47,9 @@ func TestPriorityQueueLen(t *testing.T) {
 	q.Remove(10000)
 }
 
-func TestPriorityQueueValue(t *testing.T) {
+func Test_PriorityQueueValue(t *testing.T) {
 	// create priority queue
-	q := NewPriorityQueue[container.Int](false)
+	q := NewPriorityQueue[int](false)
 	q.Add(15)
 	q.Add(19)
 	q.Add(12)
@@ -61,7 +61,7 @@ func TestPriorityQueueValue(t *testing.T) {
 	// Peek
 	val, ok := q.Peek()
 	require.True(t, ok)
-	require.Equal(t, container.Int(8), val)
+	require.Equal(t, int(8), val)
 	require.Equal(t, 5, q.Len())
 
 	// Contains
@@ -71,12 +71,12 @@ func TestPriorityQueueValue(t *testing.T) {
 	// Poll
 	val, ok = q.Poll()
 	require.True(t, ok)
-	require.Equal(t, container.Int(8), val)
+	require.Equal(t, int(8), val)
 	require.Equal(t, 4, q.Len())
 
 	val, ok = q.Poll()
 	require.True(t, ok)
-	require.Equal(t, container.Int(12), val)
+	require.Equal(t, int(12), val)
 	require.Equal(t, 3, q.Len())
 
 	// Contains (again)
@@ -89,17 +89,17 @@ func TestPriorityQueueValue(t *testing.T) {
 	require.False(t, q.Contains(15))
 }
 
-func TestPriorityQueueMinHeap(t *testing.T) {
-	pq := NewPriorityQueue[container.Int](false)
-	pqTestPriorityQueueSortImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{8, 12, 13, 15, 19})
+func Test_PriorityQueueMinHeap(t *testing.T) {
+	pq := NewPriorityQueue[int](false)
+	pqTestPriorityQueueSortImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{8, 12, 13, 15, 19})
 }
 
-func TestPriorityQueueMaxHeap(t *testing.T) {
-	pq := NewPriorityQueue[container.Int](true)
-	pqTestPriorityQueueSortImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{19, 15, 13, 12, 8})
+func Test_PriorityQueueMaxHeap(t *testing.T) {
+	pq := NewPriorityQueue[int](true)
+	pqTestPriorityQueueSortImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{19, 15, 13, 12, 8})
 }
 
-func pqTestPriorityQueueSortImpl[T container.Comparable](t *testing.T, q *PriorityQueue[T], input, expected []T) {
+func pqTestPriorityQueueSortImpl[T comparable](t *testing.T, q *PriorityQueue[T], input, expected []T) {
 	for i := 0; i < len(input); i++ {
 		q.Add(input[i])
 	}
@@ -113,22 +113,22 @@ func pqTestPriorityQueueSortImpl[T container.Comparable](t *testing.T, q *Priori
 	require.Zero(t, q.Len())
 }
 
-func TestPriorityQueueDeleteMinHeap(t *testing.T) {
-	pq := NewPriorityQueue[container.Int](false)
-	pqTestPriorityQueueDeleteImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{8, 12, 13, 15}, 19)
+func Test_PriorityQueueDeleteMinHeap(t *testing.T) {
+	pq := NewPriorityQueue[int](false)
+	pqTestPriorityQueueDeleteImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{8, 12, 13, 15}, 19)
 }
 
-func TestPriorityQueueDeleteMinHeapWithComparator(t *testing.T) {
-	pq := NewPriorityQueue[container.Int](true)
-	pqTestPriorityQueueDeleteImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{19, 13, 12, 8}, 15)
+func Test_PriorityQueueDeleteMinHeapWithComparator(t *testing.T) {
+	pq := NewPriorityQueue[int](true)
+	pqTestPriorityQueueDeleteImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{19, 13, 12, 8}, 15)
 }
 
-func TestPriorityQueueDeleteMaxHeap(t *testing.T) {
-	pq := NewPriorityQueue[container.Int](true)
-	pqTestPriorityQueueDeleteImpl(t, pq, []container.Int{15, 19, 12, 8, 13}, []container.Int{19, 15, 13, 8}, 12)
+func Test_PriorityQueueDeleteMaxHeap(t *testing.T) {
+	pq := NewPriorityQueue[int](true)
+	pqTestPriorityQueueDeleteImpl(t, pq, []int{15, 19, 12, 8, 13}, []int{19, 15, 13, 8}, 12)
 }
 
-func pqTestPriorityQueueDeleteImpl[T container.Comparable](t *testing.T, q *PriorityQueue[T], input, expected []T, val T) {
+func pqTestPriorityQueueDeleteImpl[T comparable](t *testing.T, q *PriorityQueue[T], input, expected []T, val T) {
 	for i := 0; i < len(input); i++ {
 		q.Add(input[i])
 	}

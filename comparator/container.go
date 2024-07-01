@@ -1,12 +1,19 @@
-package container
+package comparator
 
-import "container/heap"
+import (
+	"container/heap"
+	"sort"
+)
 
-var _ heap.Interface = (*Container[Int])(nil)
+var (
+	_ heap.Interface = (*Container[int])(nil)
+	_ sort.Interface = (*Container[int])(nil)
+)
 
-type Container[T Comparable] struct {
-	Items   []T
-	Reverse bool
+type Container[T any] struct {
+	Items   []T           // container data
+	Desc    bool          // asc or desc, default asc.
+	Compare Comparable[T] // cmp.Compare or custom comparison
 }
 
 // Len implement heap.Interface.
@@ -21,10 +28,10 @@ func (c Container[T]) Swap(i, j int) {
 
 // Less implement heap.Interface.
 func (c Container[T]) Less(i, j int) bool {
-	if c.Reverse {
+	if c.Desc {
 		i, j = j, i
 	}
-	return c.Items[i].CompareTo(c.Items[j]) < 0
+	return c.Compare(c.Items[i], c.Items[j]) < 0
 }
 
 // Push implement heap.Interface.
@@ -39,7 +46,7 @@ func (c *Container[T]) Pop() any {
 	old := c.Items
 	n := len(old)
 	x := old[n-1]
-	old[n-1] = zero
+	old[n-1] = zero // avoid memory leak
 	c.Items = old[:n-1]
 	return x
 }

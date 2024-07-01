@@ -21,14 +21,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestQuickQueueLen(t *testing.T) {
+func Test_QuickQueueLen(t *testing.T) {
 	q := NewQuickQueue[int]()
 	q.Add(5)
 	q.Add(6)
 	assert.Equal(t, 2, q.Len())
 }
 
-func TestQuickQueuePeek(t *testing.T) {
+func Test_QuickQueuePeek(t *testing.T) {
 	q := NewQuickQueue[string]()
 	q.Add("hello")
 	q.Add("world")
@@ -49,7 +49,7 @@ func TestQuickQueuePeek(t *testing.T) {
 	assert.Empty(t, val3)
 }
 
-func TestQuickQueueValue(t *testing.T) {
+func Test_QuickQueueValue(t *testing.T) {
 	q := NewQuickQueue[int]()
 	q.Add(15)
 	q.Add(11)
@@ -108,7 +108,7 @@ func TestQuickQueueValue(t *testing.T) {
 	require.Equal(t, 6, q.Len())
 }
 
-func TestQuickQueuePoll(t *testing.T) {
+func Test_QuickQueuePoll(t *testing.T) {
 	q := NewQuickQueue[string]()
 
 	q.Add("hello")
@@ -126,7 +126,7 @@ func TestQuickQueuePoll(t *testing.T) {
 	assert.Empty(t, val3)
 }
 
-func TestQuickQueueIsEmpty(t *testing.T) {
+func Test_QuickQueueIsEmpty(t *testing.T) {
 	q := NewQuickQueue[int]()
 	q.Add(5)
 	q.Add(6)
@@ -144,7 +144,7 @@ func TestQuickQueueIsEmpty(t *testing.T) {
 	assert.True(t, q.IsEmpty())
 }
 
-func TestQuickQueueInit(t *testing.T) {
+func Test_QuickQueueInit(t *testing.T) {
 	q := NewQuickQueue[int]()
 	q.Add(5)
 	q.Add(6)
@@ -152,48 +152,3 @@ func TestQuickQueueInit(t *testing.T) {
 
 	assert.Equal(t, 0, q.Len())
 }
-
-//
-// func TestQuickQueueWithComparator(t *testing.T) {
-// 	q := NewQuickQueue()
-//
-// 	q.Add(&student{name: "benjamin", age: 34})
-// 	q.Add(&student{name: "alice", age: 21})
-// 	q.Add(&student{name: "john", age: 42})
-// 	q.Add(&student{name: "roy", age: 28})
-// 	q.Add(&student{name: "moss", age: 25})
-//
-// 	assert.Equal(t, 5, q.Len())
-//
-// 	assert.True(t, q.Contains(&student{name: "alice", age: 21}))
-//
-// 	// Peek
-// 	v, ok := q.Peek().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "benjamin" && v.age == 34)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "benjamin" && v.age == 34)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "alice" && v.age == 21)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "john" && v.age == 42)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "roy" && v.age == 28)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "moss" && v.age == 25)
-//
-// 	// The queue should be empty now
-// 	require.Zero(t, q.Len())
-// 	require.Nil(t, q.Peek())
-// 	require.Nil(t, q.Poll())
-// }

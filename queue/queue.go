@@ -39,51 +39,51 @@ func New[T comparable]() *Queue[T] {
 }
 
 // Len returns the length of this queue.
-func (sf *Queue[T]) Len() int { return sf.length }
+func (q *Queue[T]) Len() int { return q.length }
 
 // IsEmpty returns true if this Queue contains no elements.
-func (sf *Queue[T]) IsEmpty() bool { return sf.Len() == 0 }
+func (q *Queue[T]) IsEmpty() bool { return q.Len() == 0 }
 
 // Clear initializes or clears queue.
-func (sf *Queue[T]) Clear() { sf.head, sf.tail, sf.length = nil, nil, 0 }
+func (q *Queue[T]) Clear() { q.head, q.tail, q.length = nil, nil, 0 }
 
 // Add items to the queue.
-func (sf *Queue[T]) Add(v T) {
+func (q *Queue[T]) Add(v T) {
 	e := &element[T]{value: v}
-	if sf.tail == nil {
-		sf.head, sf.tail = e, e
+	if q.tail == nil {
+		q.head, q.tail = e, e
 	} else {
-		sf.tail.next = e
-		sf.tail = e
+		q.tail.next = e
+		q.tail = e
 	}
-	sf.length++
+	q.length++
 }
 
 // Peek retrieves, but does not remove, the head of this Queue, or return nil if this Queue is empty.
-func (sf *Queue[T]) Peek() (v T, ok bool) {
-	if sf.head != nil {
-		return sf.head.value, true
+func (q *Queue[T]) Peek() (v T, ok bool) {
+	if q.head != nil {
+		return q.head.value, true
 	}
 	return v, false
 }
 
 // Poll retrieves and removes the head of the this Queue, or return nil if this Queue is empty.
-func (sf *Queue[T]) Poll() (v T, ok bool) {
-	if sf.head != nil {
-		v = sf.head.value
-		sf.head = sf.head.next
-		if sf.head == nil {
-			sf.tail = nil
+func (q *Queue[T]) Poll() (v T, ok bool) {
+	if q.head != nil {
+		v = q.head.value
+		q.head = q.head.next
+		if q.head == nil {
+			q.tail = nil
 		}
-		sf.length--
+		q.length--
 		ok = true
 	}
 	return v, ok
 }
 
 // Contains returns true if this queue contains the specified element.
-func (sf *Queue[T]) Contains(val T) bool {
-	for e := sf.head; e != nil; e = e.next {
+func (q *Queue[T]) Contains(val T) bool {
+	for e := q.head; e != nil; e = e.next {
 		if val == e.value {
 			return true
 		}
@@ -92,21 +92,21 @@ func (sf *Queue[T]) Contains(val T) bool {
 }
 
 // Remove a single instance of the specified element from this queue, if it is present.
-func (sf *Queue[T]) Remove(val T) {
-	for pre, e := sf.head, sf.head; e != nil; {
+func (q *Queue[T]) Remove(val T) {
+	for pre, e := q.head, q.head; e != nil; {
 		if val == e.value {
-			if sf.head == e && sf.tail == e {
-				sf.head, sf.tail = nil, nil
-			} else if sf.head == e {
-				sf.head = e.next
-			} else if sf.tail == e {
-				sf.tail = pre
-				sf.tail.next = nil
+			if q.head == e && q.tail == e {
+				q.head, q.tail = nil, nil
+			} else if q.head == e {
+				q.head = e.next
+			} else if q.tail == e {
+				q.tail = pre
+				q.tail.next = nil
 			} else {
 				pre.next = e.next
 			}
 			e.next = nil
-			sf.length--
+			q.length--
 			return
 		}
 		pre = e

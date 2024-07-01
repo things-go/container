@@ -21,14 +21,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestQueueLen(t *testing.T) {
+func Test_QueueLen(t *testing.T) {
 	q := New[int]()
 	q.Add(5)
 	q.Add(6)
 	assert.Equal(t, 2, q.Len())
 }
 
-func TestQueuePeek(t *testing.T) {
+func Test_QueuePeek(t *testing.T) {
 	q := New[string]()
 	q.Add("hello")
 	q.Add("world")
@@ -49,7 +49,7 @@ func TestQueuePeek(t *testing.T) {
 	assert.Empty(t, val3)
 }
 
-func TestQueueValue(t *testing.T) {
+func Test_QueueValue(t *testing.T) {
 	q := New[int]()
 	q.Add(15)
 	q.Add(19)
@@ -102,7 +102,7 @@ func TestQueueValue(t *testing.T) {
 	assert.Nil(t, q.tail)
 }
 
-func TestQueuePoll(t *testing.T) {
+func Test_QueuePoll(t *testing.T) {
 	q := New[string]()
 	q.Add("hello")
 	q.Add("world")
@@ -120,7 +120,7 @@ func TestQueuePoll(t *testing.T) {
 	assert.Empty(t, val)
 }
 
-func TestQueueIsEmpty(t *testing.T) {
+func Test_QueueIsEmpty(t *testing.T) {
 	q := New[int]()
 	q.Add(5)
 	q.Add(6)
@@ -131,7 +131,7 @@ func TestQueueIsEmpty(t *testing.T) {
 	assert.True(t, q.IsEmpty())
 }
 
-func TestQueueInit(t *testing.T) {
+func Test_QueueInit(t *testing.T) {
 	q := New[int]()
 	q.Add(5)
 	q.Add(6)
@@ -139,65 +139,3 @@ func TestQueueInit(t *testing.T) {
 
 	assert.Equal(t, 0, q.Len())
 }
-
-//
-// func TestWithComparator(t *testing.T) {
-// 	q := New(WithComparator(CompareStudent))
-//
-// 	q.Add(&student{name: "benjamin", age: 34})
-// 	q.Add(&student{name: "alice", age: 21})
-// 	q.Add(&student{name: "john", age: 42})
-// 	q.Add(&student{name: "roy", age: 28})
-// 	q.Add(&student{name: "moss", age: 25})
-//
-// 	assert.Equal(t, 5, q.Len())
-//
-// 	assert.True(t, q.Contains(&student{name: "alice", age: 21}))
-//
-// 	// Peek
-// 	v, ok := q.Peek().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "benjamin" && v.age == 34)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "benjamin" && v.age == 34)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "alice" && v.age == 21)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "john" && v.age == 42)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "roy" && v.age == 28)
-//
-// 	v, ok = q.Poll().(*student)
-// 	require.True(t, ok)
-// 	require.True(t, v.name == "moss" && v.age == 25)
-//
-// 	// The queue should be empty now
-// 	require.Zero(t, q.Len())
-// 	require.Nil(t, q.Peek())
-// 	require.Nil(t, q.Poll())
-// }
-//
-// type student struct {
-// 	name string
-// 	age  int
-// }
-//
-// // Compare returns -1, 0 or 1 when the first student's age is greater, equal to, or less than the second student's age.
-// func CompareStudent(v1, v2 interface{}) int {
-// 	s1, s2 := v1.(*student), v2.(*student)
-// 	if s1.age < s2.age {
-// 		return 1
-// 	}
-// 	if s1.age > s2.age {
-// 		return -1
-// 	}
-// 	return 0
-// }

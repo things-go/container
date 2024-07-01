@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestQuickStack(t *testing.T) {
+func Test_QuickStack(t *testing.T) {
 	s := NewQuickStack[string]()
 	s.Push("5")
 	s.Push("hello")

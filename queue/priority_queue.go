@@ -15,49 +15,65 @@
 package queue
 
 import (
+	"cmp"
 	"container/heap"
 
 	"github.com/things-go/container"
+	"github.com/things-go/container/comparator"
 )
 
-var _ container.Queue[container.Int] = (*PriorityQueue[container.Int])(nil)
+var _ container.Queue[int] = (*PriorityQueue[int])(nil)
 
 // PriorityQueue represents an unbounded priority queue based on a priority heap.
 // It implements heap.Interface.
-type PriorityQueue[T container.Comparable] struct {
-	data *container.Container[T]
+type PriorityQueue[T comparable] struct {
+	container *comparator.Container[T]
 }
 
 // NewPriorityQueue initializes and returns an Queue, default min heap.
-func NewPriorityQueue[T container.Comparable](maxHeap bool, items ...T) *PriorityQueue[T] {
-	q := &PriorityQueue[T]{
-		data: &container.Container[T]{
+func NewPriorityQueue[T cmp.Ordered](maxHeap bool, items ...T) *PriorityQueue[T] {
+	pq := &PriorityQueue[T]{
+		container: &comparator.Container[T]{
 			Items:   items,
-			Reverse: maxHeap,
+			Desc:    maxHeap,
+			Compare: cmp.Compare[T],
 		},
 	}
-	heap.Init(q.data)
+	heap.Init(pq.container)
+	return pq
+}
+
+// NewPriorityQueue initializes and returns an Queue, default min heap.
+func NewPriorityQueueWith[T comparable](maxHeap bool, compare comparator.Comparable[T], items ...T) *PriorityQueue[T] {
+	q := &PriorityQueue[T]{
+		container: &comparator.Container[T]{
+			Items:   items,
+			Desc:    maxHeap,
+			Compare: compare,
+		},
+	}
+	heap.Init(q.container)
 	return q
 }
 
 // Len returns the length of this priority queue.
-func (pq *PriorityQueue[T]) Len() int { return pq.data.Len() }
+func (pq *PriorityQueue[T]) Len() int { return pq.container.Len() }
 
 // IsEmpty returns true if this list contains no elements.
 func (pq *PriorityQueue[T]) IsEmpty() bool { return pq.Len() == 0 }
 
 // Clear removes all the elements from this priority queue.
-func (pq *PriorityQueue[T]) Clear() { pq.data.Items = make([]T, 0) }
+func (pq *PriorityQueue[T]) Clear() { pq.container.Items = make([]T, 0) }
 
 // Add inserts the specified element into this priority queue.
-func (pq *PriorityQueue[T]) Add(items T) {
-	heap.Push(pq.data, items)
+func (pq *PriorityQueue[T]) Add(val T) {
+	heap.Push(pq.container, val)
 }
 
 // Peek retrieves, but does not remove, the head of this queue, or return nil if this queue is empty.
 func (pq *PriorityQueue[T]) Peek() (val T, exist bool) {
 	if pq.Len() > 0 {
-		return pq.data.Items[0], true
+		return pq.container.Items[0], true
 	}
 	return val, false
 }
@@ -65,7 +81,7 @@ func (pq *PriorityQueue[T]) Peek() (val T, exist bool) {
 // Poll retrieves and removes the head of the this queue, or return nil if this queue is empty.
 func (pq *PriorityQueue[T]) Poll() (val T, exist bool) {
 	if pq.Len() > 0 {
-		return heap.Pop(pq.data).(T), true
+		return heap.Pop(pq.container).(T), true
 	}
 	return val, false
 }
@@ -77,16 +93,14 @@ func (pq *PriorityQueue[T]) Contains(val T) bool { return pq.indexOf(val) >= 0 }
 // It returns false if the target value isn't present, otherwise returns true.
 func (pq *PriorityQueue[T]) Remove(val T) {
 	if idx := pq.indexOf(val); idx >= 0 {
-		heap.Remove(pq.data, idx)
+		heap.Remove(pq.container, idx)
 	}
 }
 
 func (pq *PriorityQueue[T]) indexOf(val T) int {
-	if pq.Len() > 0 {
-		for i := 0; i < pq.Len(); i++ {
-			if val.CompareTo(pq.data.Items[i]) == 0 {
-				return i
-			}
+	for i := 0; i < pq.Len(); i++ {
+		if pq.container.Items[i] == val {
+			return i
 		}
 	}
 	return -1

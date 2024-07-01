@@ -9,13 +9,13 @@ import (
 
 func checkList[T comparable](t *testing.T, l *LinkedList[T], es []T) {
 	require.Equal(t, len(es), l.Len())
-	for i, e := 0, l.l.Front(); e != nil; e = e.Next() {
+	for i, e := 0, l.list.Front(); e != nil; e = e.Next() {
 		assert.Equal(t, es[i], e.Value)
 		i++
 	}
 }
 
-func TestArrayListLen(t *testing.T) {
+func Test_ArrayListLen(t *testing.T) {
 	l := New[int]()
 
 	l.PushBack(5)
@@ -40,7 +40,7 @@ func TestArrayListLen(t *testing.T) {
 	assert.True(t, l.IsEmpty())
 }
 
-func TestArrayListValue(t *testing.T) {
+func Test_ArrayListValue(t *testing.T) {
 	l := New[int]()
 	l.Push(5)
 	l.PushBack(7)
@@ -131,7 +131,7 @@ func TestArrayListValue(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestArrayListIterator(t *testing.T) {
+func Test_ArrayListIterator(t *testing.T) {
 	l := New[int]()
 	items := []int{5, 6, 7}
 	l.PushBack(5)
@@ -146,7 +146,7 @@ func TestArrayListIterator(t *testing.T) {
 	l.Iterator(nil)
 }
 
-func TestArrayListReverseIterator(t *testing.T) {
+func Test_ArrayListReverseIterator(t *testing.T) {
 	items := []int{5, 6, 7}
 	l := New[int]()
 	l.PushBack(5)
@@ -161,7 +161,7 @@ func TestArrayListReverseIterator(t *testing.T) {
 	l.ReverseIterator(nil)
 }
 
-func TestArrayListSort(t *testing.T) {
+func Test_ArrayListSort(t *testing.T) {
 	ll := New[int]()
 
 	expect := []int{4, 6, 7, 15}
@@ -191,7 +191,7 @@ func TestArrayListSort(t *testing.T) {
 }
 
 // fmt.Printf("%#v\r\n", l.items).
-func TestExtending(t *testing.T) {
+func Test_Extending(t *testing.T) {
 	l1 := New[int]()
 	l2 := New[int]()
 
