@@ -95,14 +95,15 @@ func (q *Queue[T]) Contains(val T) bool {
 func (q *Queue[T]) Remove(val T) {
 	for pre, e := q.head, q.head; e != nil; {
 		if val == e.value {
-			if q.head == e && q.tail == e {
+			switch {
+			case q.head == e && q.tail == e:
 				q.head, q.tail = nil, nil
-			} else if q.head == e {
+			case q.head == e:
 				q.head = e.next
-			} else if q.tail == e {
+			case q.tail == e:
 				q.tail = pre
 				q.tail.next = nil
-			} else {
+			default:
 				pre.next = e.next
 			}
 			e.next = nil
